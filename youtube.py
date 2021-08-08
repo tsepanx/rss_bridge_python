@@ -1,5 +1,4 @@
 import re
-import feedparser
 import requests
 import logging
 
@@ -15,7 +14,7 @@ class YoutubeApi:
     def __get(self, api_url, _params):
         global REQUESTS_MADE
 
-        print('Making request')
+        print('Making request...')
         REQUESTS_MADE += 1
 
         params = {"key": API_KEY}
@@ -72,16 +71,6 @@ class Channel:
         r = '(?<=channel\/)([A-z]|[0-9])+'
         return re.search(r, self.url).group()
 
-    # @property
-    # def rss_url(self):
-    #     return 'https://www.youtube.com/feeds/videos.xml?channel_id=' + self.id
-
-    # Requires net
-    # def fetch_videos_rss(self):
-    #     feed = feedparser.parse(self.rss_url)
-
-    #     self.videos = [Video(i) for i in feed.entries]
-
     def fetch_videos(self):
         def fetch(ptoken=None):
             params = dict()
@@ -90,10 +79,14 @@ class Channel:
 
             d = YoutubeApi.channel_videos(self.id, **params)
 
-            new_videos = list(utils.channel_videos_from_search(d, Video))
-            self.videos.extend(new_videos)
+            try:
+                new_videos = list(utils.channel_videos_from_search(d, Video))
+                self.videos.extend(new_videos)
 
-            return d
+                return d
+            except Exception as e:
+                print(d)
+                exit()
 
         d = fetch(None)
 
@@ -107,17 +100,19 @@ class Channel:
 
 
 CHANNELS = [
-    # "https://www.youtube.com/channel/UCPMus_VPfNJsNRwkrE3ySSA",
-    "https://www.youtube.com/channel/UC3Xbp3NcAtiq0XHOcU3QdOA",
+    # "https://youtube.com/channel/UCPMus_VPfNJsNRwkrE3ySSA",
+    # "https://youtube.com/channel/UC3Xbp3NcAtiq0XHOcU3QdOA",
+    "https://youtube.com/channel/UCVls1GmFKf6WlTraIb_IaJg"
 ]
 
-for url in CHANNELS:
-    ch = Channel(url=url)
+if __name__ == '__main__':
+    for url in CHANNELS:
+        ch = Channel(url=url)
 
-    print()
-    print(ch)
+        print()
+        print(ch)
 
-    ch.fetch_videos()
-    print(ch.videos)
+        ch.fetch_videos()
+        print(ch.videos)
 
-print(REQUESTS_MADE, 'requests made')
+    print(REQUESTS_MADE, 'requests made')
