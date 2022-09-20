@@ -48,7 +48,7 @@ class Video:
 
     @property
     def url(self):
-        return 'https://youtu.be/' + self.id #TODO replace with normal link
+        return 'https://youtu.be/' + self.id  # TODO replace with normal link
 
     @property
     def preview_url(self):
@@ -92,8 +92,6 @@ class Channel:
 
         while utils.ApiField.NEXT_PAGE_TOKEN in d:
             d = fetch(ptoken=d[utils.ApiField.NEXT_PAGE_TOKEN])
-
-
 
     def __str__(self):
         return f"Channel {self.id}, {len(self.videos)} videos"
