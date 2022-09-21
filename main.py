@@ -1,15 +1,19 @@
+import pprint
+import re
 from typing import List
 import dataclasses
+
+from yt_api import last_channel_videos
 
 
 @dataclasses.dataclass
 class ContentItem:
     """
-    Base interface defining feed.fetch() return type
+    Base interface defining Feed.fetch() return type
     """
 
-    title: str = None
     url: str = None
+    title: str = None
     pic_url: str = None
 
 
@@ -28,7 +32,22 @@ class Feed:
         pass
 
 
-class YTContentItem(ContentItem): pass
+class YTContentItem(ContentItem):
+    def __init__(self, d: dict):  # Init by json item from YT API
+        try:
+            video_id = d['id']['videoId']
+            title = d['snippet']['title']
+
+            video_url = f'https://www.youtube.com/watch?v={video_id}'
+            video_pic_url = d['snippet']['thumbnails']['medium']['url']
+
+            super().__init__(
+                url=video_url,
+                title=title,
+                pic_url=video_pic_url
+            )
+        except Exception:
+            print(f'Error for parsing video data')
 
 
 class YTFeed(Feed):
@@ -38,13 +57,24 @@ class YTFeed(Feed):
         if channel_url:
             super().__init__(url=channel_url)
         elif channel_url:
-            super().__init__(url=f'https://youtube.com/c/{channel_id}')
+            super().__init__(url=f'https://youtube.com/channel/{channel_id}')
+
+    @property
+    def id(self):
+        r = '(?<=channel\/)([A-z]|[0-9])+'
+        return re.search(r, self.url).group()
 
     def api_result_item_to_dataclass(self, d: dict) -> ContentItemType: pass  # TODO
 
     def fetch(self) -> List[ContentItemType]:
-        # last_fetched_list = []
-        # cur_fetched = [] # TODO Run some youtube api
-        # new_list = cur_fetched - last_fetched_list
-        # return [self.api_result_item_to_dataclass(i) for i in new_list]
-        pass
+        cur_fetched = last_channel_videos(self.id, count=10)
+
+        # new_list = cur_fetched - last_fetched_list # TODO Compare with previously fetched list from db
+
+        return [YTContentItem(i) for i in cur_fetched]
+
+
+if __name__ == "__main__":
+    yt1 = YTFeed(channel_url="https://youtube.com/channel/UCVls1GmFKf6WlTraIb_IaJg")
+
+    pprint.pprint(yt1.fetch())

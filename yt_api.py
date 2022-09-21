@@ -5,6 +5,12 @@ import requests
 
 API_KEY = open('.YT_API_KEY').readline()
 
+def as_list(func):
+    def wrapper(*args, **kwargs):
+        res = list(func(*args, *kwargs))
+        return res
+    return wrapper
+
 
 def _api_get_method(api_url: str, _params: dict) -> dict:
     print('Making request...')
@@ -17,6 +23,7 @@ def _api_get_method(api_url: str, _params: dict) -> dict:
     return req.json()
 
 
+# @as_list
 def last_channel_videos(
         channel_id: str = None,  # Channel id in str format
         days_after: int = None,  # Filter by v.date > (now - x days)
@@ -42,7 +49,8 @@ def last_channel_videos(
         })
 
     _params.update(kwargs)
-    return _api_get_method(api_url, _params)
+    res = _api_get_method(api_url, _params)
+    return res['items']
 
 
 if __name__ == "__main__":
