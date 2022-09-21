@@ -2,7 +2,7 @@ import datetime
 import re
 from dataclasses import dataclass
 from functools import lru_cache
-from typing import Optional
+from typing import Optional, List
 
 import bs4
 import requests
@@ -23,14 +23,18 @@ def logged_get(url):
     print(f'REQUEST: {url}')
     return res
 
-class TGChannelPosts:
-    q = list()
-    next_url: str = None
+class TGChannel:
+    """
+    Basic api related class representing single telegram channel
+    iter(TGChannel) iterates over its channel messages (posts) ordered by pub date
+    """
+    q: List[bs4.element.Tag] = list()
+    next_url: Optional[str] = None
+    url: str = None
 
     def __init__(self, url: str):
         self.url = url
-
-        self.next_url = self.fetch_next_posts_page(self.url)
+        self.next_url = url
 
     def fetch_channel_name(self):
         req = logged_get(self.url)
@@ -46,8 +50,9 @@ class TGChannelPosts:
         channel_name = channel_title_tag.contents[0]
         print(channel_name)
 
-    @lru_cache
-    def fetch_next_posts_page(self, fetch_url: str) -> Optional[str]:
+    # --- Iterator related funcs ---
+    # @lru_cache
+    def fetch_next_posts_page(self, fetch_url: str):  # -> Optional[str]:
         """
         :param fetch_url: Link to fetch previous channel posts.
         example: https://t.me/s/notboring_tech?before=2422
@@ -63,7 +68,7 @@ class TGChannelPosts:
             recursive=True
         )
 
-        self.q = list(reversed(posts_list))
+        self.q = list(reversed(posts_list))  # TODO convert to dataclass on the fly
 
         # --- Next messages page href parsing
         messages_more_tag = soup.find(
@@ -71,13 +76,13 @@ class TGChannelPosts:
             recursive=True
         )
 
-        if messages_more_tag.get('data-after'):
-            # raise StopIteration
-            return None  # We reached end of posts list
+        if messages_more_tag.get('data-after'):  # We reached end of posts list
+            self.next_url = None
+        else:
+            next_page_href = messages_more_tag.get('href')
+            next_page_link = f'{BASE_URL}{next_page_href}'
 
-        next_page_href = messages_more_tag.get('href')
-        next_page_link = f'{BASE_URL}{next_page_href}'
-        return next_page_link
+            self.next_url = next_page_link
 
     @staticmethod
     def html_tag_to_dataclass(post: bs4.element.Tag) -> Optional[TGApiPost]:
@@ -121,26 +126,25 @@ class TGChannelPosts:
 
     def __next__(self) -> TGApiPost:
         if len(self.q) > 0:
-            next_post = self.q[0]
-            self.q.pop(0)
+            head_post = self.q.pop(0)
+            dataclass_item = self.html_tag_to_dataclass(head_post)
 
-            post_dataclass = self.html_tag_to_dataclass(next_post)
-            if post_dataclass:
-                return post_dataclass
+            if dataclass_item:
+                return dataclass_item
             else:
                 return self.__next__()
-
-        else:  # No left fetched posts
+        elif not self.next_url:
+            raise StopIteration
+        else:  # No left fetched posts in queue
             print(f'Fetching new posts page')
-            if self.next_url:
-                self.next_url = self.fetch_next_posts_page(self.next_url)
-                return self.__next__()
-            else:
-                raise StopIteration
+            self.fetch_next_posts_page(self.next_url)
 
+            return self.__next__()
 
 if __name__ == "__main__":
-    gen = TGChannelPosts('https://t.me/s/prostyemisli')
+    gen = TGChannel('https://t.me/s/prostyemisli')
+
+    a = iter([1, 2, 3, 4])
 
     # for i in range(200):
     #     c = gen.__next__()
@@ -148,6 +152,8 @@ if __name__ == "__main__":
     #     print(f'text: "{c.text}"')
     #     print(f'datetime: "{c.datetime}"')
     #     print('\n\n')
+
+    # iter(gen)
 
     for i in list(gen):
         print(i.url)
