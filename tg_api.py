@@ -18,10 +18,11 @@ class TGApiPost:
     preview_link: str = None
     preview_link_pic: str = None
 
-def logged_get(url):
-    res = requests.get(url)
+def logged_get(url, *args, **kwargs):
     print(f'REQUEST: {url}')
-    return res
+    req = requests.get(url, *args, **kwargs)
+    print(f'{req.status_code} | {req.url}')
+    return req
 
 class TGChannel:
     """
