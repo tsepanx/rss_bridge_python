@@ -78,16 +78,16 @@ def gen_rss(feed: Feed, after_date: datetime.date = None) -> str:
         )
 
         fe = fg.add_entry()
-        fe.id('ID')
-        fe.title('TITLE 2')
+        fe.id(f'ID {randint(1, 100)}')
+        fe.title('TITLE 3')
         fe.description('DESC')
         fe.content('CONTENT')
-        fe.link(href='LINK')
+        fe.link(href=i.url)
         fe.author({'name': 'AUTHOR NAME', 'uri': 'AUTHOR URI'})
         # fe.category('CATEGORY')
         fe.source('SOURCE')
         fe.summary('SUMMARY')
-        fe.guid(f'GUID {randint(1, 100)}')
+        # fe.guid(f'GUID {randint(1, 100)}')
         fe.published(dt)
 
         # fe = fg.add_entry()
@@ -100,10 +100,10 @@ def gen_rss(feed: Feed, after_date: datetime.date = None) -> str:
 
     # atomfeed = fg.atom_str(pretty=True)  # Get the ATOM feed as string
     # rssfeed = fg.rss_str(pretty=True)  # Get the RSS feed as string
-    # fg.atom_file('atom.xml')  # Write the ATOM feed to a file
-    # fg.rss_file('rss.xml')  # Write the RSS feed to a file
+    fg.atom_file('atom.xml')  # Write the ATOM feed to a file
+    fg.rss_file('rss.xml')  # Write the RSS feed to a file
 
-    return fg.rss_file('rss.xml')  #datetime.datetime.combine(i.pub_date, datetime.time.min) Write the RSS feed to a file
+    # return fg.rss_file('rss.xml')  #datetime.datetime.combine(i.pub_date, datetime.time.min) Write the RSS feed to a file
 
 
 if __name__ == "__main__":
