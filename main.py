@@ -78,16 +78,24 @@ def gen_rss(feed: Feed, after_date: datetime.date = None) -> str:
 
         fe = fg.add_entry()
         fe.id('ID')
-        fe.title('TITLE')
+        fe.title('TITLE 2')
         fe.description('DESC')
         fe.content('CONTENT')
-        fe.link(href='LINK')
+        fe.link(link='LINK')
         fe.author({'name': 'AUTHOR NAME', 'uri': 'AUTHOR URI'})
         # fe.category('CATEGORY')
         fe.source('SOURCE')
         fe.summary('SUMMARY')
         fe.guid('GUID')
         fe.published(dt)
+
+        # fe = fg.add_entry()
+        # fe.id(i.url)
+        # fe.title(i.title)
+        # # fe.description(i.text)
+        # fe.content(i.text)
+        # fe.link(href=i.url)
+        # fe.pubDate(dt)
 
     # atomfeed = fg.atom_str(pretty=True)  # Get the ATOM feed as string
     # rssfeed = fg.rss_str(pretty=True)  # Get the RSS feed as string
