@@ -91,24 +91,27 @@ def gen_rss(feed: Feed, after_date: datetime.date = None):
         fe.title(shortened_text(i.text))
         fe.content(i.text)
         fe.link(href=i.url)
+        if i.preview_img_url:
+            fe.link(
+                href=i.preview_img_url,
+                rel='enclosure',
+                type='png'
+            )
         fe.published(dt)
 
     dirname = f'feeds/{feed.api_object.channel_name}'
-    os.mkdir(dirname)
+    if not os.path.exists(dirname):
+        os.mkdir(dirname)
 
     fg.atom_file(f'{dirname}/atom.xml')  # Write the ATOM feed to a file
     fg.rss_file(f'{dirname}/rss.xml')  # Write the RSS feed to a file
 
 
 if __name__ == "__main__":
-    yt1 = YTFeed("https://youtube.com/channel/UCVls1GmFKf6WlTraIb_IaJg")
-    # tg_prostye = TGFeed('prostyemisli')
-    tg_feed = TGFeed('black_triangle_tg')
-
     week_delta = datetime.timedelta(days=7)
     last_n_weeks = lambda n: datetime.date.today() - n * week_delta
 
     gen_rss(
-        tg_feed,
+        TGFeed('notboring_tech'),
         after_date=last_n_weeks(1)
     )
