@@ -1,7 +1,7 @@
 import dataclasses
 from datetime import datetime, date
 import re
-from typing import List, Optional
+from typing import List
 
 from utils import shortened_text, logged_get, ContentItem, ApiClass, YT_API_KEY, YT_BASE_API_URL, \
     YT_API_MAX_RESULTS_PER_PAGE
@@ -109,9 +109,8 @@ class YTApiChannel(ApiClass):
 
 
 if __name__ == "__main__":
-    gen = YTApiChannel("https://youtube.com/channel/UCVls1GmFKf6WlTraIb_IaJg").__iter__(
-        published_after_param=date(2022, 9, 15)
-    )
+    gen = YTApiChannel("https://youtube.com/channel/UCVls1GmFKf6WlTraIb_IaJg")
+    gen.published_after_param = date(2022, 9, 15)
 
     videos_list = list(gen)
 

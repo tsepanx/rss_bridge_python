@@ -1,6 +1,6 @@
 import datetime
 import pprint
-from typing import List
+from typing import List, Type
 
 from tg_api import TGPostDataclass, TGApiChannel
 from utils import ContentItem, ApiClass
@@ -9,7 +9,7 @@ from yt_api import YTVideoDataclass, YTApiChannel
 
 class Feed:
     ContentItemClass = ContentItem
-    api_class: ApiClass = ApiClass
+    api_class: Type[ApiClass] = ApiClass
 
     def __init__(self, url: str):
         self.url = url

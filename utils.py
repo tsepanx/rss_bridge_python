@@ -34,13 +34,13 @@ class ContentItem:
 
     url: str
     pub_date: datetime.date
-    title: str = None
-    text: str = None
-    preview_img_url: str = None
+    title: Optional[str] = None
+    text: Optional[str] = None
+    preview_img_url: Optional[str] = None
 
 
 class ApiClass:
-    SUPPORT_FILTER_BY_DATE: bool = False  # Does api allow fetching items with date > self.published_after_param
+    SUPPORT_FILTER_BY_DATE: Optional[bool] = False  # Does api allow fetching items with date > self.published_after_param
     published_after_param: Optional[datetime.date] = None
     q: List = list()
     url: str

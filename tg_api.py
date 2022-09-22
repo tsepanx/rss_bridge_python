@@ -10,7 +10,7 @@ from utils import shortened_text, logged_get, ContentItem, ApiClass, TG_BASE_URL
 
 @dataclass
 class TGPostDataclass(ContentItem):
-    preview_link_url: str = None
+    preview_link_url: Optional[str] = None
 
     def __repr__(self):
         return f'{self.url} | {shortened_text(self.text, 50)} | {self.pub_date} | {self.preview_link_url}'
