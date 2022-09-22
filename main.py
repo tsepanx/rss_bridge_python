@@ -6,7 +6,7 @@ from typing import List, Type
 from feedgen.feed import FeedGenerator
 
 from tg_api import TGPostDataclass, TGApiChannel
-from utils import ContentItem, ApiClass
+from utils import ContentItem, ApiClass, shortened_text
 from yt_api import YTVideoDataclass, YTApiChannel
 
 
@@ -58,7 +58,7 @@ class TGFeed(Feed):
 def gen_rss(feed: Feed, after_date: datetime.date = None) -> str:
     fg = FeedGenerator()
 
-    items = feed.fetch_all(after_date=after_date)
+    items: List[TGPostDataclass] = feed.fetch_all(after_date=after_date)
 
     fg.id(feed.url)
     fg.title(f'TG Channel feed [TEST] {feed.api_object.channel_name}')
@@ -78,15 +78,15 @@ def gen_rss(feed: Feed, after_date: datetime.date = None) -> str:
         )
 
         fe = fg.add_entry()
-        fe.id(f'ID {randint(1, 100)}')
-        fe.title('TITLE 3')
-        fe.description('DESC')
-        fe.content('CONTENT')
+        fe.id(f'ID 10')
+        fe.title(shortened_text(i.text))
+        # fe.description('DESC')
+        fe.content(i.text)
         fe.link(href=i.url)
-        fe.author({'name': 'AUTHOR NAME', 'uri': 'AUTHOR URI'})
+        # fe.author({'name': 'AUTHOR NAME', 'uri': 'AUTHOR URI'})
         # fe.category('CATEGORY')
-        fe.source('SOURCE')
-        fe.summary('SUMMARY')
+        # fe.source('SOURCE')
+        # fe.summary('SUMMARY')
         # fe.guid(f'GUID {randint(1, 100)}')
         fe.published(dt)
 
