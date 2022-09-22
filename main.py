@@ -38,7 +38,9 @@ class Feed:
                 except StopIteration:
                     return result
 
-        return list(self.api_object)  # Invokes generator with http requests
+        result = list(self.api_object)  # Invokes generator with http requests
+        pprint.pprint(result)
+        return result
 
 class YTFeed(Feed):
     ContentItemClass = YTVideoDataclass
@@ -80,26 +82,10 @@ def gen_rss(feed: Feed, after_date: datetime.date = None):
         fe = fg.add_entry()
         fe.id(f'ID 1000')
         fe.title(shortened_text(i.text))
-        # fe.description('DESC')
         fe.content(i.text)
         fe.link(href=i.url)
-        # fe.author({'name': 'AUTHOR NAME', 'uri': 'AUTHOR URI'})
-        # fe.category('CATEGORY')
-        # fe.source('SOURCE')
-        # fe.summary('SUMMARY')
-        # fe.guid(f'GUID {randint(1, 100)}')
         fe.published(dt)
 
-        # fe = fg.add_entry()
-        # fe.id(i.url)
-        # fe.title(i.title)
-        # # fe.description(i.text)
-        # fe.content(i.text)
-        # fe.link(href=i.url)
-        # fe.pubDate(dt)
-
-    # atomfeed = fg.atom_str(pretty=True)  # Get the ATOM feed as string
-    # rssfeed = fg.rss_str(pretty=True)  # Get the RSS feed as string
     fg.atom_file('atom.xml')  # Write the ATOM feed to a file
     fg.rss_file('rss.xml')  # Write the RSS feed to a file
 
@@ -115,7 +101,7 @@ if __name__ == "__main__":
 
     gen_rss(
         tg_prostye,
-        after_date=last_n_weeks(3)
+        after_date=last_n_weeks(10)
     )
 
     # pprint.pprint(

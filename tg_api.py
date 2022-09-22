@@ -59,7 +59,7 @@ class TGApiChannel(ApiClass):
         self.channel_img_url = channel_img_url
         self.channel_desc = str(channel_desc)
 
-        print(self.channel_name, self.channel_img_url, self.channel_desc, sep='\n')
+        # print(self.channel_name, self.channel_img_url, self.channel_desc, sep='\n')
 
     # --- Iterator related funcs ---
     # @lru_cache
