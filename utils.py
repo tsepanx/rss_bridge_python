@@ -26,7 +26,7 @@ def logged_get(url, *args, **kwargs):
 @dataclass
 class ContentItem:
     """
-    Base interface defining Feed.fetch() return type
+    Base interface defining Feed.fetch_all() return type
     """
 
     url: str

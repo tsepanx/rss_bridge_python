@@ -3,8 +3,6 @@ from datetime import datetime, date
 import re
 from typing import List, Optional
 
-import requests.status_codes
-
 from utils import shortened_text, logged_get, ContentItem, ApiClass, YT_API_KEY, YT_BASE_API_URL, \
     YT_API_MAX_RESULTS_PER_PAGE
 

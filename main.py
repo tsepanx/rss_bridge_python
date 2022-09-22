@@ -16,7 +16,7 @@ class Feed:
         self.url = url
         self.api_object = self.api_class(url)
 
-    def fetch(self) -> List[ContentItemClass]:
+    def fetch_all(self) -> List[ContentItemClass]:
         """
         Base function to get new updates from given feed.
         Must be overridden by every Sub-class.
@@ -46,5 +46,5 @@ if __name__ == "__main__":
     yt1 = YTFeed(channel_url="https://youtube.com/channel/UCVls1GmFKf6WlTraIb_IaJg")
     tg1 = TGFeed('https://t.me/s/prostyemisli')
 
-    pprint.pprint(tg1.fetch())
-    pprint.pprint(yt1.fetch())
+    pprint.pprint(tg1.fetch_all())
+    pprint.pprint(yt1.fetch_all())

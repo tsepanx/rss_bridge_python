@@ -49,7 +49,7 @@ class TGApiChannel(ApiClass):
     # @lru_cache
     def fetch_next_posts_page(self, fetch_url: str):  # -> Optional[str]:
         """
-        :param fetch_url: Link to fetch previous channel posts.
+        :param fetch_url: Link to fetch_all previous channel posts.
         example: https://t.me/s/notboring_tech?before=2422
 
         :return: Next fetch_url for fetching next page of posts
