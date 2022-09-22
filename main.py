@@ -1,5 +1,6 @@
 import datetime
 import pprint
+from random import randint
 from typing import List, Type
 
 from feedgen.feed import FeedGenerator
@@ -86,7 +87,7 @@ def gen_rss(feed: Feed, after_date: datetime.date = None) -> str:
         # fe.category('CATEGORY')
         fe.source('SOURCE')
         fe.summary('SUMMARY')
-        fe.guid('GUID')
+        fe.guid(f'GUID {randint(1, 100)}')
         fe.published(dt)
 
         # fe = fg.add_entry()
