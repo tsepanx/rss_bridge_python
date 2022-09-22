@@ -55,7 +55,7 @@ class TGFeed(Feed):
     api_class = TGApiChannel
 
 
-def gen_rss(feed: Feed, after_date: datetime.date = None) -> str:
+def gen_rss(feed: Feed, after_date: datetime.date = None):
     fg = FeedGenerator()
 
     items: List[TGPostDataclass] = feed.fetch_all(after_date=after_date)
@@ -78,7 +78,7 @@ def gen_rss(feed: Feed, after_date: datetime.date = None) -> str:
         )
 
         fe = fg.add_entry()
-        fe.id(f'ID 10')
+        fe.id(f'ID 1000')
         fe.title(shortened_text(i.text))
         # fe.description('DESC')
         fe.content(i.text)
