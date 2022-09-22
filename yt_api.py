@@ -3,7 +3,7 @@ from datetime import datetime, date
 import re
 from typing import List, Optional
 
-from tg_api import logged_get, ContentItem
+from tg_api import logged_get, ContentItem, shortened_text, ApiClass
 
 API_KEY = open('.YT_API_KEY').readline()
 BASE_API_URL = "https://www.googleapis.com/youtube/v3/search"
@@ -43,13 +43,15 @@ class _ApiFields:
     NEXT_PAGE_TOKEN = "nextPageToken"
     PUBLISHED_AFTER = "publishedAfter"
 
-class YTChannelGen:
+class YTApiChannel(ApiClass):
     q: List[dict] = list()
     next_page_token: str = ''
     published_after: Optional[date] = None
 
-    def __init__(self, url):
-        self.url = url
+    def __init__(self, url: str):
+        super().__init__(
+            url=url
+        )
 
     @property
     def id(self):
@@ -122,7 +124,7 @@ class YTChannelGen:
 
 
 if __name__ == "__main__":
-    gen = YTChannelGen("https://youtube.com/channel/UCVls1GmFKf6WlTraIb_IaJg").__iter__(
+    gen = YTApiChannel("https://youtube.com/channel/UCVls1GmFKf6WlTraIb_IaJg").__iter__(
         published_after=date(2022, 9, 15)
     )
 
@@ -131,5 +133,4 @@ if __name__ == "__main__":
     for i in range(len(videos_list)):
         # c = next(gen)
         c = videos_list[i]
-        short_title = c.title[:20].replace("\n", " ") + '...'
-        print(f'{i + 1} | {c.url} {short_title} {c.pub_date}')
+        print(f'{i + 1} | {c.url} {shortened_text(c.title)} {c.pub_date}')

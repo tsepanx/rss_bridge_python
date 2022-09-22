@@ -3,55 +3,32 @@ import re
 from typing import List
 import dataclasses
 
-from yt_api import last_channel_videos
-
-
-@dataclasses.dataclass
-class ContentItem:
-    """
-    Base interface defining Feed.fetch() return type
-    """
-
-    url: str = None
-    title: str = None
-    pic_url: str = None
+from tg_api import TGApiPost, ContentItem, ApiClass
+from yt_api import YTVideo, YTApiChannel
 
 
 class Feed:
-    ContentItemType = ContentItem
+    ContentItemClass = ContentItem
+    api_class: ApiClass
 
-    def __init__(self, url=None):
+    def __init__(self, url: str):
         self.url = url
+        self.api_object = self.api_class.__init__(url)
 
-    def fetch(self) -> List[ContentItem]:
+    def fetch(self) -> List[ContentItemClass]:
         """
         Base function to get new updates from given feed.
         Must be overridden by every Sub-class.
         :return: List[ContentItem]
         """
-        pass
 
-
-class YTContentItem(ContentItem):
-    def __init__(self, d: dict):  # Init by json item from YT API
-        try:
-            video_id = d['id']['videoId']
-            title = d['snippet']['title']
-
-            video_url = f'https://www.youtube.com/watch?v={video_id}'
-            video_pic_url = d['snippet']['thumbnails']['medium']['url']
-
-            super().__init__(
-                url=video_url,
-                title=title,
-                pic_url=video_pic_url
-            )
-        except Exception:
-            print(f'Error for parsing video data')
+        content_items = list(self.api_object)  # TODO Fetch not all available items
+        return content_items
 
 
 class YTFeed(Feed):
-    ContentItemType = YTContentItem
+    ContentItemClass: ContentItem = YTVideo
+    api_class: ApiClass = YTApiChannel
 
     def __init__(self, channel_url=None, channel_id=None):
         if channel_url:
@@ -59,19 +36,8 @@ class YTFeed(Feed):
         elif channel_url:
             super().__init__(url=f'https://youtube.com/channel/{channel_id}')
 
-    @property
-    def id(self):
-        r = '(?<=channel\/)([A-z]|[0-9])+'
-        return re.search(r, self.url).group()
-
-    def api_result_item_to_dataclass(self, d: dict) -> ContentItemType: pass  # TODO
-
-    def fetch(self) -> List[ContentItemType]:
-        cur_fetched = last_channel_videos(self.id, count=10)
-
-        # new_list = cur_fetched - last_fetched_list # TODO Compare with previously fetched list from db
-
-        return [YTContentItem(i) for i in cur_fetched]
+class TGFeed(Feed):
+    pass
 
 
 if __name__ == "__main__":

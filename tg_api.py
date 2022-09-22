@@ -1,13 +1,16 @@
 import datetime
 import re
 from dataclasses import dataclass
-from functools import lru_cache
 from typing import Optional, List
 
 import bs4
 import requests
 
 BASE_URL = 'https://t.me'
+
+
+def shortened_text(s: str) -> str:
+    return s[:min(len(s), 20)].replace("\n", " ") + '...'
 
 
 @dataclass
@@ -23,6 +26,18 @@ class ContentItem:
     preview_img_url: str = None
 
 
+class ApiClass:
+    q: List = list()
+    url: str
+
+    def __init__(self, url: str):
+        self.url = url
+        pass  # TODO Move common patterns of yt & tg
+
+    def __iter__(self): return self
+    def __next__(self) -> ContentItem: pass
+
+
 @dataclass
 class TGApiPost(ContentItem):
     preview_link_url: str = None
@@ -35,18 +50,20 @@ def logged_get(url, *args, **kwargs):
     return req
 
 
-class TGChannel:
+class TGApiChannel(ApiClass):
     """
     Basic api related class representing single telegram channel
-    iter(TGChannel) iterates over its channel messages (posts) ordered by pub date
+    iter(TGApiChannel) iterates over its channel messages (posts) ordered by pub date
     """
     q: List[bs4.element.Tag] = list()
     next_url: Optional[str] = None
-    url: str = None
 
     def __init__(self, url: str):
-        self.url = url
         self.next_url = url
+
+        super().__init__(
+            url=url
+        )
 
     def fetch_channel_name(self):
         req = logged_get(self.url)
@@ -133,9 +150,6 @@ class TGChannel:
             preview_img_url=link_preview_img,
         )
 
-    def __iter__(self):
-        return self
-
     def __next__(self) -> TGApiPost:
         if len(self.q) > 0:
             head_post = self.q.pop(0)
@@ -155,9 +169,8 @@ class TGChannel:
 
 
 if __name__ == "__main__":
-    gen = iter(TGChannel('https://t.me/s/prostyemisli'))
+    gen = iter(TGApiChannel('https://t.me/s/prostyemisli'))
 
     for i in range(101):
         c = next(gen)
-        short_text = c.text[:20].replace("\n", " ") + '...'
-        print(f'{i} | {c.url} {short_text} | {c.pub_date} | {c.preview_link_url}')
+        print(f'{i} | {c.url} {shortened_text(c.text)} | {c.pub_date} | {c.preview_link_url}')
