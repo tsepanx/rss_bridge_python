@@ -11,18 +11,29 @@ BASE_URL = 'https://t.me'
 
 
 @dataclass
-class TGApiPost:
-    datetime: datetime.datetime
+class ContentItem:
+    """
+    Base interface defining Feed.fetch() return type
+    """
+
     url: str
+    pub_date: datetime.date
+    title: str = None
     text: str = None
-    preview_link: str = None
-    preview_link_pic: str = None
+    preview_img_url: str = None
+
+
+@dataclass
+class TGApiPost(ContentItem):
+    preview_link_url: str = None
+
 
 def logged_get(url, *args, **kwargs):
     print(f'REQUEST: {url}')
     req = requests.get(url, *args, **kwargs)
-    print(f'{req.status_code} | {req.url}')
+    print(f'[{req.status_code}] | {req.url}')
     return req
+
 
 class TGChannel:
     """
@@ -88,8 +99,8 @@ class TGChannel:
     @staticmethod
     def html_tag_to_dataclass(post: bs4.element.Tag) -> Optional[TGApiPost]:
         href_date_tag = post.findChild(name='a', attrs={'class': 'tgme_widget_message_date'})
-        post_date = href_date_tag.contents[0].get('datetime')
-        post_date = datetime.datetime.fromisoformat(post_date)  # Convert from string to pythonic format
+        datetime_str = href_date_tag.contents[0].get('datetime')
+        post_date = datetime.datetime.fromisoformat(datetime_str).date()  # Convert from string to pythonic format
 
         post_href = href_date_tag.get('href')
 
@@ -115,11 +126,11 @@ class TGChannel:
             link_preview_img = None
 
         return TGApiPost(
-            datetime=post_date,
+            pub_date=post_date,
             url=post_href,
             text=text,
-            preview_link=link_preview,
-            preview_link_pic=link_preview_img,
+            preview_link_url=link_preview,
+            preview_img_url=link_preview_img,
         )
 
     def __iter__(self):
@@ -142,19 +153,11 @@ class TGChannel:
 
             return self.__next__()
 
+
 if __name__ == "__main__":
-    gen = TGChannel('https://t.me/s/prostyemisli')
+    gen = iter(TGChannel('https://t.me/s/prostyemisli'))
 
-    a = iter([1, 2, 3, 4])
-
-    # for i in range(200):
-    #     c = gen.__next__()
-    #     print(f'href: "{c.url}"')
-    #     print(f'text: "{c.text}"')
-    #     print(f'datetime: "{c.datetime}"')
-    #     print('\n\n')
-
-    # iter(gen)
-
-    for i in list(gen):
-        print(i.url)
+    for i in range(101):
+        c = next(gen)
+        short_text = c.text[:20].replace("\n", " ") + '...'
+        print(f'{i} | {c.url} {short_text} | {c.pub_date} | {c.preview_link_url}')
