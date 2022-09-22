@@ -1,2 +1,53 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>TG Channel feed [TEST] Простые Мысли</title><link>https://t.me/s/prostyemisli</link><description>Если ты любишь пребывать в компании думающих и вежливых людей, присоединяйся к нашему сообществу. Мы растём вместе, мы делимся силой, знанием и опытом.</description><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://cdn4.telegram-cdn.org/file/kYsMwAnPXao5ibWLnYB4AIokMqdlgNd0pDcLQZxoPtWV7FIbkRWHk5ddTkrw5nRG57cL8T8m5veVus77r_NoA38Ws6J0XsG9kvpLo852bST-bQmW4Tuxm__WBFdguEJdBoWOH4jgrMEWUkjCdnhshrKmnT9h5Pa8OYaHc0AIqdqwVY3uSuoCx71dFY7GPdjdISJ6mZLqrXFNh6lsMZfXHMJYdG0FeQH8SDKJWK6H5jciGwrQzNlxZfo66TZIbcvNuaKXrbAL1dxUfMJd5nf_uMPhTHRBJNtdJESC3gFYIxuAnH7mA_PRLXpJ8Ft7nEDKXptJ3gyAe4Ayd4Y2RHh4EQ.jpg</url><title>TG Channel feed [TEST] Простые Мысли</title><link>https://t.me/s/prostyemisli</link></image><lastBuildDate>Thu, 22 Sep 2022 21:42:24 +0000</lastBuildDate><item><title>TITLE</title><link>LINK</link><description>DESC</description><content:encoded>CONTENT</content:encoded><guid isPermaLink="false">GUID</guid><pubDate>Tue, 13 Sep 2022 00:00:00 +0000</pubDate></item><item><title>TITLE</title><link>LINK</link><description>DESC</description><content:encoded>CONTENT</content:encoded><guid isPermaLink="false">GUID</guid><pubDate>Mon, 19 Sep 2022 00:00:00 +0000</pubDate></item></channel></rss>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.w3.org/2005/Atom ">
+    <channel>
+        <title>TG Channel feed [TEST] Простые Мысли</title>
+        <link>https://t.me/s/prostyemisli</link>
+        <description>Если ты любишь пребывать в компании думающих и вежливых людей, присоединяйся к нашему сообществу.
+            Мы растём вместе, мы делимся силой, знанием и опытом.
+        </description>
+        <docs>http://www.rssboard.org/rss-specification</docs>
+        <generator>python-feedgen</generator>
+        <image>
+            <url>
+                https://cdn4.telegram-cdn.org/file/kYsMwAnPXao5ibWLnYB4AIokMqdlgNd0pDcLQZxoPtWV7FIbkRWHk5ddTkrw5nRG57cL8T8m5veVus77r_NoA38Ws6J0XsG9kvpLo852bST-bQmW4Tuxm__WBFdguEJdBoWOH4jgrMEWUkjCdnhshrKmnT9h5Pa8OYaHc0AIqdqwVY3uSuoCx71dFY7GPdjdISJ6mZLqrXFNh6lsMZfXHMJYdG0FeQH8SDKJWK6H5jciGwrQzNlxZfo66TZIbcvNuaKXrbAL1dxUfMJd5nf_uMPhTHRBJNtdJESC3gFYIxuAnH7mA_PRLXpJ8Ft7nEDKXptJ3gyAe4Ayd4Y2RHh4EQ.jpg
+            </url>
+            <title>TG Channel feed [TEST] Простые Мысли</title>
+            <link>https://t.me/s/prostyemisli</link>
+        </image>
+        <lastBuildDate>Thu, 22 Sep 2022 21:54:41 +0000</lastBuildDate>
+        <item>
+            <title>TITLE 2</title>
+            <link>LINK</link>
+            <description>DESC</description>
+            <content:encoded>CONTENT</content:encoded>
+            <guid isPermaLink="false">GUID 3</guid>
+            <pubDate>Sat, 03 Sep 2022 00:00:00 +0000</pubDate>
+        </item>
+        <item>
+            <title>TITLE 2</title>
+            <link>LINK</link>
+            <description>DESC</description>
+            <content:encoded>CONTENT</content:encoded>
+            <guid isPermaLink="false">GUID 96</guid>
+            <pubDate>Mon, 05 Sep 2022 00:00:00 +0000</pubDate>
+        </item>
+        <item>
+            <title>TITLE 2</title>
+            <link>LINK</link>
+            <description>DESC</description>
+            <content:encoded>CONTENT</content:encoded>
+            <guid isPermaLink="false">GUID 7</guid>
+            <pubDate>Tue, 13 Sep 2022 00:00:00 +0000</pubDate>
+        </item>
+        <item>
+            <title>TITLE 2</title>
+            <link>LINK</link>
+            <description>DESC</description>
+            <content:encoded>CONTENT</content:encoded>
+            <guid isPermaLink="false">GUID 68</guid>
+            <pubDate>Mon, 19 Sep 2022 00:00:00 +0000</pubDate>
+        </item>
+    </channel>
+</rss>

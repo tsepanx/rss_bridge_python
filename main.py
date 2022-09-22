@@ -115,7 +115,7 @@ if __name__ == "__main__":
 
     gen_rss(
         tg_prostye,
-        after_date=last_n_weeks(2)
+        after_date=last_n_weeks(3)
     )
 
     # pprint.pprint(
