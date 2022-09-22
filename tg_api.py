@@ -32,19 +32,34 @@ class TGApiChannel(ApiClass):
             url=url
         )
 
-    def fetch_channel_name(self):
+    def fetch_channel_metadata(self):
         req = logged_get(self.url)
         soup = bs4.BeautifulSoup(req.text, "html.parser")
 
         # --- Parse channel title ---
-        channel_title_wrapper = soup.find(
+        channel_metadata_wrapper = soup.find(
             name='div', attrs={
-                'class': 'tgme_channel_info_header_title'},
+                'class': 'tgme_channel_info_header'},
             recursive=True
         )
-        channel_title_tag = channel_title_wrapper.findChild(name='span')
-        channel_name = channel_title_tag.contents[0]
-        print(channel_name)
+
+        channel_title = channel_metadata_wrapper.findChild(name='span').contents[0]
+
+        channel_img_url = channel_metadata_wrapper.findChild(name='img', recursive=True)
+        channel_img_url = channel_img_url.get('src')
+
+        channel_desc = soup.findChild(
+            name='div', attrs={
+                'class': 'tgme_channel_info_description'
+            },
+            recursive=True
+        ).contents[0]
+
+        self.channel_name = str(channel_title)
+        self.channel_img_url = channel_img_url
+        self.channel_desc = str(channel_desc)
+
+        print(self.channel_name, self.channel_img_url, self.channel_desc, sep='\n')
 
     # --- Iterator related funcs ---
     # @lru_cache

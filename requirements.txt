@@ -2,3 +2,4 @@ mypy
 feedparser
 requests
 beautifulsoup4
+feedgen

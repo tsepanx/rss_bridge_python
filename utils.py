@@ -9,6 +9,7 @@ def as_list(func):
     def wrapper(*args, **kwargs):
         res = list(func(*args, *kwargs))
         return res
+
     return wrapper
 
 
@@ -16,7 +17,7 @@ def shortened_text(s: str, max_chars=20) -> str:
     return s[:min(len(s), max_chars)] \
                .strip() \
                .replace('\n', ' ') \
-            + '...'
+           + '...'
 
 
 def logged_get(url, *args, **kwargs):
@@ -40,17 +41,26 @@ class ContentItem:
 
 
 class ApiClass:
-    SUPPORT_FILTER_BY_DATE: Optional[bool] = False  # Does api allow fetching items with date > self.published_after_param
+    SUPPORT_FILTER_BY_DATE: Optional[bool] = False  # If api allow fetching items with date > self.published_after_param
     published_after_param: Optional[datetime.date] = None
     q: List = list()
     url: str
+    channel_name: str
+    channel_img_url: Optional[str] = None
+    channel_desc: Optional[str] = None
 
     def __init__(self, url: str):
         self.url = url
+        self.fetch_channel_metadata()
         pass  # TODO Move common patterns of yt & tg
 
-    def __iter__(self): return self
+    def __iter__(self):
+        return self
+
     def __next__(self) -> ContentItem: pass
+
+    def fetch_channel_metadata(self) -> str:
+        pass
 
 
 YT_API_KEY = open('.YT_API_KEY').readline()
