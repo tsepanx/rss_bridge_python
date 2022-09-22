@@ -82,7 +82,7 @@ def gen_rss(feed: Feed, after_date: datetime.date = None) -> str:
         fe.title('TITLE 2')
         fe.description('DESC')
         fe.content('CONTENT')
-        fe.link(link='LINK')
+        fe.link(href='LINK')
         fe.author({'name': 'AUTHOR NAME', 'uri': 'AUTHOR URI'})
         # fe.category('CATEGORY')
         fe.source('SOURCE')
