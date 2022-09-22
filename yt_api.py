@@ -28,9 +28,9 @@ class _ApiFields:
     PUBLISHED_AFTER = "publishedAfter"
 
 class YTApiChannel(ApiClass):
+    SUPPORT_FILTER_BY_DATE = True
     q: List[dict] = list()
     next_page_token: str = ''
-    published_after: Optional[date] = None
 
     def __init__(self, url: str):
         super().__init__(
@@ -77,9 +77,9 @@ class YTApiChannel(ApiClass):
                 _ApiFields.PAGE_TOKEN: page_token
             })
 
-        if self.published_after:
+        if self.published_after_param and self.SUPPORT_FILTER_BY_DATE:
             _params.update({
-                    _ApiFields.PUBLISHED_AFTER: to_yt_datetime_param(self.published_after)
+                    _ApiFields.PUBLISHED_AFTER: to_yt_datetime_param(self.published_after_param)
                 })
 
         print('Making YT request...')
@@ -94,11 +94,6 @@ class YTApiChannel(ApiClass):
             self.q.extend(json_items)
         elif req.status_code == 403:  # Forbidden
             raise Exception('=== YT API FORBIDDEN ===')
-
-    def __iter__(self, published_after: date = None):
-        if published_after:
-            self.published_after = published_after
-        return self
 
     def __next__(self) -> YTVideoDataclass:
         if len(self.q) > 0:
@@ -115,7 +110,7 @@ class YTApiChannel(ApiClass):
 
 if __name__ == "__main__":
     gen = YTApiChannel("https://youtube.com/channel/UCVls1GmFKf6WlTraIb_IaJg").__iter__(
-        published_after=date(2022, 9, 15)
+        published_after_param=date(2022, 9, 15)
     )
 
     videos_list = list(gen)

@@ -13,7 +13,7 @@ class TGPostDataclass(ContentItem):
     preview_link_url: str = None
 
     def __repr__(self):
-        return f'{self.url} | {shortened_text(self.text)} | {self.pub_date} | {self.preview_link_url}'
+        return f'{self.url} | {shortened_text(self.text, 50)} | {self.pub_date} | {self.preview_link_url}'
 
 
 class TGApiChannel(ApiClass):
@@ -21,6 +21,7 @@ class TGApiChannel(ApiClass):
     Basic api related class representing single telegram channel
     iter(TGApiChannel) iterates over its channel messages (posts) ordered by pub date
     """
+    SUPPORT_FILTER_BY_DATE = False
     q: List[bs4.element.Tag] = list()
     next_url: Optional[str] = None
 

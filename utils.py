@@ -1,6 +1,6 @@
 import datetime
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 import requests
 
@@ -12,8 +12,11 @@ def as_list(func):
     return wrapper
 
 
-def shortened_text(s: str) -> str:
-    return s[:min(len(s), 20)].replace("\n", " ") + '...'
+def shortened_text(s: str, max_chars=20) -> str:
+    return s[:min(len(s), max_chars)] \
+               .strip() \
+               .replace('\n', ' ') \
+            + '...'
 
 
 def logged_get(url, *args, **kwargs):
@@ -37,6 +40,8 @@ class ContentItem:
 
 
 class ApiClass:
+    SUPPORT_FILTER_BY_DATE: bool = False  # Does api allow fetching items with date > self.published_after_param
+    published_after_param: Optional[datetime.date] = None
     q: List = list()
     url: str
 
