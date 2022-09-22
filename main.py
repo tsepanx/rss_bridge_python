@@ -1,4 +1,5 @@
 import datetime
+import os
 import pprint
 from random import randint
 from typing import List, Type
@@ -36,11 +37,13 @@ class Feed:
                         else:
                             raise StopIteration
                 except StopIteration:
+                    pprint.pprint(result)
                     return result
 
         result = list(self.api_object)  # Invokes generator with http requests
         pprint.pprint(result)
         return result
+
 
 class YTFeed(Feed):
     ContentItemClass = YTVideoDataclass
@@ -52,9 +55,13 @@ class YTFeed(Feed):
         elif channel_url:
             super().__init__(url=f'https://youtube.com/channel/{channel_id}')
 
+
 class TGFeed(Feed):
     ContentItemClass = TGPostDataclass
     api_class = TGApiChannel
+
+    def __init__(self, tg_alias: str):
+        super().__init__(f'https://t.me/s/{tg_alias}')
 
 
 def gen_rss(feed: Feed, after_date: datetime.date = None):
@@ -64,7 +71,7 @@ def gen_rss(feed: Feed, after_date: datetime.date = None):
 
     fg.id(feed.url)
     fg.title(f'TG Channel feed [TEST] {feed.api_object.channel_name}')
-    fg.author({'name': 'Stepan Tsepa', 'uri': 'https://github.com/tsepanx'})
+    fg.author({'name': 'feed-aggregator', 'uri': 'https://github.com/tsepanx/feed-aggregator'})
     fg.link(href=feed.url, rel='alternate')
     fg.logo(feed.api_object.channel_img_url)
     # fg.subtitle('_Subtitle_')
@@ -86,26 +93,22 @@ def gen_rss(feed: Feed, after_date: datetime.date = None):
         fe.link(href=i.url)
         fe.published(dt)
 
-    fg.atom_file('atom.xml')  # Write the ATOM feed to a file
-    fg.rss_file('rss.xml')  # Write the RSS feed to a file
+    dirname = f'feeds/{feed.api_object.channel_name}'
+    os.mkdir(dirname)
 
-    # return fg.rss_file('rss.xml')  #datetime.datetime.combine(i.pub_date, datetime.time.min) Write the RSS feed to a file
+    fg.atom_file(f'{dirname}/atom.xml')  # Write the ATOM feed to a file
+    fg.rss_file(f'{dirname}/rss.xml')  # Write the RSS feed to a file
 
 
 if __name__ == "__main__":
     yt1 = YTFeed("https://youtube.com/channel/UCVls1GmFKf6WlTraIb_IaJg")
-    tg_prostye = TGFeed('https://t.me/s/prostyemisli')
+    # tg_prostye = TGFeed('prostyemisli')
+    tg_feed = TGFeed('black_triangle_tg')
 
     week_delta = datetime.timedelta(days=7)
     last_n_weeks = lambda n: datetime.date.today() - n * week_delta
 
     gen_rss(
-        tg_prostye,
-        after_date=last_n_weeks(10)
+        tg_feed,
+        after_date=last_n_weeks(1)
     )
-
-    # pprint.pprint(
-    #     tg1.fetch_all(after_date=last_n_weeks(2))
-    # )
-    # pprint.pprint(yt1.fetch_all())
-
