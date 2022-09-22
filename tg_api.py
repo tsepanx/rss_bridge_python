@@ -39,8 +39,11 @@ class ApiClass:
 
 
 @dataclass
-class TGApiPost(ContentItem):
+class TGPostDataclass(ContentItem):
     preview_link_url: str = None
+
+    def __repr__(self):
+        return f'{self.url} | {shortened_text(self.text)} | {self.pub_date} | {self.preview_link_url}'
 
 
 def logged_get(url, *args, **kwargs):
@@ -114,7 +117,7 @@ class TGApiChannel(ApiClass):
             self.next_url = next_page_link
 
     @staticmethod
-    def html_tag_to_dataclass(post: bs4.element.Tag) -> Optional[TGApiPost]:
+    def html_tag_to_dataclass(post: bs4.element.Tag) -> Optional[TGPostDataclass]:
         href_date_tag = post.findChild(name='a', attrs={'class': 'tgme_widget_message_date'})
         datetime_str = href_date_tag.contents[0].get('datetime')
         post_date = datetime.datetime.fromisoformat(datetime_str).date()  # Convert from string to pythonic format
@@ -142,7 +145,7 @@ class TGApiChannel(ApiClass):
             link_preview = None
             link_preview_img = None
 
-        return TGApiPost(
+        return TGPostDataclass(
             pub_date=post_date,
             url=post_href,
             text=text,
@@ -150,7 +153,7 @@ class TGApiChannel(ApiClass):
             preview_img_url=link_preview_img,
         )
 
-    def __next__(self) -> TGApiPost:
+    def __next__(self) -> TGPostDataclass:
         if len(self.q) > 0:
             head_post = self.q.pop(0)
             dataclass_item = self.html_tag_to_dataclass(head_post)
@@ -173,4 +176,4 @@ if __name__ == "__main__":
 
     for i in range(101):
         c = next(gen)
-        print(f'{i} | {c.url} {shortened_text(c.text)} | {c.pub_date} | {c.preview_link_url}')
+        print(c)

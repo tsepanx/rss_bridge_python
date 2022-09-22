@@ -35,8 +35,9 @@ def from_yt_datetime_to_date(s: str) -> date:
     return datetime.fromisoformat(s).date()
 
 @dataclasses.dataclass
-class YTVideo(ContentItem):
-    pass
+class YTVideoDataclass(ContentItem):
+    def __repr__(self):
+        return f'{self.url} | {shortened_text(self.title)} | {self.pub_date}'
 
 class _ApiFields:
     PAGE_TOKEN = "pageToken"
@@ -61,7 +62,7 @@ class YTApiChannel(ApiClass):
     # --- Iterator related funcs ---
 
     @staticmethod
-    def item_json_to_dataclass(json: dict) -> YTVideo:
+    def item_json_to_dataclass(json: dict) -> YTVideoDataclass:
         video_id = json["id"]["videoId"]
         url = f'https://www.youtube.com/watch?v={video_id}'
 
@@ -71,7 +72,7 @@ class YTApiChannel(ApiClass):
         title = json['snippet']['title']
         preview_img_url = json['snippet']['thumbnails']['medium']['url']
 
-        return YTVideo(
+        return YTVideoDataclass(
             url=url,
             pub_date=pub_date,
             title=title,
@@ -110,7 +111,7 @@ class YTApiChannel(ApiClass):
             self.published_after = published_after
         return self
 
-    def __next__(self) -> YTVideo:
+    def __next__(self) -> YTVideoDataclass:
         if len(self.q) > 0:
             head_elem = self.q.pop(0)
             dataclass_item = self.item_json_to_dataclass(head_elem)
@@ -133,4 +134,4 @@ if __name__ == "__main__":
     for i in range(len(videos_list)):
         # c = next(gen)
         c = videos_list[i]
-        print(f'{i + 1} | {c.url} {shortened_text(c.title)} {c.pub_date}')
+        print(c)
