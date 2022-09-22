@@ -3,7 +3,8 @@ import re
 from typing import List
 import dataclasses
 
-from tg_api import TGPostDataclass, ContentItem, ApiClass, TGApiChannel
+from tg_api import TGPostDataclass, TGApiChannel
+from utils import ContentItem, ApiClass
 from yt_api import YTVideoDataclass, YTApiChannel
 
 
@@ -46,3 +47,4 @@ if __name__ == "__main__":
     tg1 = TGFeed('https://t.me/s/prostyemisli')
 
     pprint.pprint(tg1.fetch())
+    pprint.pprint(yt1.fetch())

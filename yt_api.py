@@ -3,25 +3,8 @@ from datetime import datetime, date
 import re
 from typing import List, Optional
 
-from tg_api import logged_get, ContentItem, shortened_text, ApiClass
-
-API_KEY = open('.YT_API_KEY').readline()
-BASE_API_URL = "https://www.googleapis.com/youtube/v3/search"
-
-def as_list(func):
-    def wrapper(*args, **kwargs):
-        res = list(func(*args, *kwargs))
-        return res
-    return wrapper
-
-def _api_get_method(api_url: str, _params: dict) -> dict:
-    print('Making request...')
-
-    params = {"key": API_KEY}
-    params.update(_params)
-
-    req = logged_get(api_url, params=params)
-    return req.json()
+from utils import shortened_text, logged_get, ContentItem, ApiClass, YT_API_KEY, YT_BASE_API_URL, \
+    YT_API_MAX_RESULTS_PER_PAGE
 
 
 def to_yt_datetime_param(d: date) -> str:
@@ -80,11 +63,10 @@ class YTApiChannel(ApiClass):
         )
 
     def fetch_next_page(self, page_token: str = None):
-        MAX_RESULTS_PER_PAGE = 50
-
         _params = {
+            "key": YT_API_KEY,
             "channelId": self.id,
-            "maxResults": MAX_RESULTS_PER_PAGE,
+            "maxResults": YT_API_MAX_RESULTS_PER_PAGE,
             "order": "date",
             "part": "snippet",
             "type": "video",
@@ -100,7 +82,10 @@ class YTApiChannel(ApiClass):
                     _ApiFields.PUBLISHED_AFTER: to_yt_datetime_param(self.published_after)
                 })
 
-        json = _api_get_method(BASE_API_URL, _params)
+        print('Making YT request...')
+
+        req = logged_get(YT_BASE_API_URL, _params)
+        json = req.json()
         json_items = json.get('items')
 
         self.next_page_token = json.get(_ApiFields.NEXT_PAGE_TOKEN, None)

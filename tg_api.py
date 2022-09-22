@@ -4,38 +4,8 @@ from dataclasses import dataclass
 from typing import Optional, List
 
 import bs4
-import requests
 
-BASE_URL = 'https://t.me'
-
-
-def shortened_text(s: str) -> str:
-    return s[:min(len(s), 20)].replace("\n", " ") + '...'
-
-
-@dataclass
-class ContentItem:
-    """
-    Base interface defining Feed.fetch() return type
-    """
-
-    url: str
-    pub_date: datetime.date
-    title: str = None
-    text: str = None
-    preview_img_url: str = None
-
-
-class ApiClass:
-    q: List = list()
-    url: str
-
-    def __init__(self, url: str):
-        self.url = url
-        pass  # TODO Move common patterns of yt & tg
-
-    def __iter__(self): return self
-    def __next__(self) -> ContentItem: pass
+from utils import shortened_text, logged_get, ContentItem, ApiClass, TG_BASE_URL
 
 
 @dataclass
@@ -44,13 +14,6 @@ class TGPostDataclass(ContentItem):
 
     def __repr__(self):
         return f'{self.url} | {shortened_text(self.text)} | {self.pub_date} | {self.preview_link_url}'
-
-
-def logged_get(url, *args, **kwargs):
-    print(f'REQUEST: {url}')
-    req = requests.get(url, *args, **kwargs)
-    print(f'[{req.status_code}] | {req.url}')
-    return req
 
 
 class TGApiChannel(ApiClass):
@@ -112,7 +75,7 @@ class TGApiChannel(ApiClass):
             self.next_url = None
         else:
             next_page_href = messages_more_tag.get('href')
-            next_page_link = f'{BASE_URL}{next_page_href}'
+            next_page_link = f'{TG_BASE_URL}{next_page_href}'
 
             self.next_url = next_page_link
 
