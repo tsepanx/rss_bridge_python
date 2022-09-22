@@ -3,6 +3,8 @@ from datetime import datetime, date
 import re
 from typing import List, Optional
 
+import requests.status_codes
+
 from utils import shortened_text, logged_get, ContentItem, ApiClass, YT_API_KEY, YT_BASE_API_URL, \
     YT_API_MAX_RESULTS_PER_PAGE
 
@@ -85,11 +87,15 @@ class YTApiChannel(ApiClass):
         print('Making YT request...')
 
         req = logged_get(YT_BASE_API_URL, _params)
-        json = req.json()
-        json_items = json.get('items')
 
-        self.next_page_token = json.get(_ApiFields.NEXT_PAGE_TOKEN, None)
-        self.q.extend(json_items)
+        if req.status_code == 200:
+            json = req.json()
+            json_items = json.get('items')
+
+            self.next_page_token = json.get(_ApiFields.NEXT_PAGE_TOKEN, None)
+            self.q.extend(json_items)
+        elif req.status_code == 403:  # Forbidden
+            raise Exception('=== YT API FORBIDDEN ===')
 
     def __iter__(self, published_after: date = None):
         if published_after:
