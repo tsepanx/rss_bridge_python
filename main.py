@@ -60,12 +60,17 @@ def gen_rss(
         else:
             link = i.url
 
-        content = i.html_content if i.html_content else i.text
+        if i.html_content:
+            content = i.html_content
+            content_type = 'text/html'
+        else:
+            content = i.text
+            content_type = 'text/plain'
 
         fe = fg.add_entry()
         fe.id(i.url)
         fe.title(shortened_text(i.text, 50))
-        fe.content(content)
+        fe.content(content, type=content_type)
         fe.link(href=link)
         if i.preview_img_url:
             fe.link(
