@@ -108,8 +108,7 @@ class TGApiChannel(ApiClass):
         text_wrapper = post.findChild(name='div', attrs={'class': 'tgme_widget_message_text'})
         if not text_wrapper:
             return None
-        text = text_wrapper.text
-        text = text.replace('.', '.\n')
+        text = text_wrapper.get_text('\n', strip=True)
         # print(text)
 
         link_preview_wrapper = post.findChild(name='a', attrs={'class': 'tgme_widget_message_link_preview'})
