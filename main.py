@@ -24,8 +24,10 @@ class YTFeed(Feed):
 class TGFeed(Feed):
     ContentItemClass = TGPostDataclass
     api_class = TGApiChannel
+    tg_alias: str
 
     def __init__(self, tg_alias: str):
+        self.tg_alias = tg_alias
         super().__init__(f'https://t.me/s/{tg_alias}')
 
 
@@ -73,7 +75,8 @@ def gen_rss(
             )
         fe.published(dt)
 
-    dirname = f'feeds/{feed_title.replace(" ", "_")}'
+    # dirname = f'feeds/{feed_title.replace(" ", "_")}'
+    dirname = f'feeds/{feed_title}'
     if not os.path.exists('feeds'):
         os.mkdir('feeds')
 
@@ -111,5 +114,5 @@ if __name__ == "__main__":
 
         gen_rss(items,
                 feed_url=f.url,
-                feed_title=f.api_object.channel_name,
+                feed_title=f.tg_alias,
                 feed_desc=f.api_object.channel_desc)
