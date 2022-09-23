@@ -34,7 +34,7 @@ class ContentItem:
     Base interface defining Feed.fetch_all() return type
     """
 
-    id: int  # Unique attr
+    # id: int  # Unique attr
     url: str
     pub_date: datetime.date
     title: Optional[str] = None
