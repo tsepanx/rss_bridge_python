@@ -1,4 +1,5 @@
 import datetime
+import pprint
 import re
 from dataclasses import dataclass
 from typing import Optional, List
@@ -114,7 +115,8 @@ class TGApiChannel(ApiClass):
         if not text_wrapper:
             return None
         text = text_wrapper.get_text('\n', strip=True)
-        # print(text)
+        html_content = str(text_wrapper)
+        # pprint.pprint(text, text2)
 
         link_preview_wrapper = post.findChild(name='a', attrs={'class': 'tgme_widget_message_link_preview'})
 
@@ -139,6 +141,7 @@ class TGApiChannel(ApiClass):
             pub_date=post_date,
             url=post_href,
             text=text,
+            html_content=html_content,
             preview_link_url=link_preview,
             preview_img_url=link_preview_img,
         )

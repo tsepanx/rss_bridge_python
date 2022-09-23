@@ -39,6 +39,7 @@ class ContentItem:
     pub_date: datetime.date
     title: Optional[str] = None
     text: Optional[str] = None
+    html_content: Optional[str] = None
     preview_img_url: Optional[str] = None
 
 

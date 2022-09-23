@@ -53,15 +53,17 @@ def gen_rss(
             datetime.timezone.utc
         )
 
-        if isinstance(i, TGPostDataclass):
+        if isinstance(i, TGPostDataclass):  # Make tg preview link as rss item link
             link = i.preview_link_url if i.preview_link_url else i.url
         else:
             link = i.url
 
+        content = i.html_content if i.html_content else i.text
+
         fe = fg.add_entry()
         fe.id(i.url)
         fe.title(shortened_text(i.text, 50))
-        fe.content(i.text)
+        fe.content(content)
         fe.link(href=link)
         if i.preview_img_url:
             fe.link(
@@ -82,10 +84,17 @@ def gen_rss(
     fg.rss_file(f'{dirname}/rss.xml')  # Write the RSS feed to a file
 
 
-if __name__ == "__main__":
-    week_delta = datetime.timedelta(days=7)
-    last_n_weeks = lambda n: datetime.date.today() - n * week_delta
+week_delta = datetime.timedelta(days=7)
+last_n_weeks = lambda n: datetime.date.today() - n * week_delta
 
+if __name__ == "__main__":
+    tg_alias = 'black_triangle_tg'
+    feed = TGFeed(tg_alias)
+    feed.fetch_all(
+        last_n_weeks(1)
+    )
+
+elif __name__ == "__main__":
     aliases = list(
         filter(
             lambda x: not x.startswith('#'),
