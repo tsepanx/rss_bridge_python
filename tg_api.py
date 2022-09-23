@@ -116,7 +116,8 @@ class TGApiChannel(ApiClass):
             return None
         text = text_wrapper.get_text('\n', strip=True)
         html_content = html.escape(
-            str(text_wrapper)
+            str(text_wrapper),
+            quote=False
         )
         # pprint.pprint(text, text2)
 
