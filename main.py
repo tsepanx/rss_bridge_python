@@ -31,11 +31,11 @@ class TGFeed(Feed):
 def gen_rss(feed: Feed, after_date: datetime.date = None):
     fg = FeedGenerator()
 
-    items: List[TGPostDataclass] = feed.fetch_all(after_date=after_date)
+    items: List[TGPostDataclass] = reversed(feed.fetch_all(after_date=after_date))
 
     fg.id(feed.url)
     fg.title(f'TG Channel feed [TEST] {feed.api_object.channel_name}')
-    fg.author({'name': 'feed-aggregator', 'uri': 'https://github.com/tsepanx/feed-aggregator'})
+    fg.author({'name': 'feed-aggregator', 'uri': feed.url})
     fg.link(href=feed.url, rel='alternate')
     fg.logo(feed.api_object.channel_img_url)
     # fg.subtitle('_Subtitle_')
@@ -52,7 +52,7 @@ def gen_rss(feed: Feed, after_date: datetime.date = None):
 
         fe = fg.add_entry()
         fe.id(i.url)
-        fe.title(shortened_text(i.text))
+        fe.title(shortened_text(i.text, 30))
         fe.content(i.text)
         fe.link(href=i.url)
         if i.preview_img_url:
