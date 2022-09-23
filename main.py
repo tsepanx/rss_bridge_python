@@ -53,7 +53,10 @@ def gen_rss(
             datetime.timezone.utc
         )
 
-        link = i.preview_link_url if i.preview_link_url else i.url
+        if isinstance(i, TGPostDataclass):
+            link = i.preview_link_url if i.preview_link_url else i.url
+        else:
+            link = i.url
 
         fe = fg.add_entry()
         fe.id(i.url)
