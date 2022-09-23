@@ -51,7 +51,7 @@ def gen_rss(feed: Feed, after_date: datetime.date = None):
         )
 
         fe = fg.add_entry()
-        fe.id(f'ID 1000')
+        fe.id(i.url)
         fe.title(shortened_text(i.text))
         fe.content(i.text)
         fe.link(href=i.url)
