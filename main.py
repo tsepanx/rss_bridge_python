@@ -62,10 +62,10 @@ def gen_rss(
 
         if i.html_content:
             content = i.html_content
-            content_type = 'text/html'
+            content_type = 'html'
         else:
             content = i.text
-            content_type = 'text/plain'
+            content_type = None
 
         fe = fg.add_entry()
         fe.id(i.url)
