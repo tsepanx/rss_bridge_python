@@ -1,11 +1,12 @@
 import datetime
 import os
-from typing import List
+import pprint
+from typing import List, Type, TypeVar
 
 from feedgen.feed import FeedGenerator
 
 from tg_api import TGPostDataclass, TGApiChannel
-from utils import shortened_text, Feed
+from utils import shortened_text, Feed, ContentItem
 from yt_api import YTVideoDataclass, YTApiChannel
 
 
@@ -28,17 +29,20 @@ class TGFeed(Feed):
         super().__init__(f'https://t.me/s/{tg_alias}')
 
 
-def gen_rss(feed: Feed, after_date: datetime.date = None):
+def gen_rss(
+        items: List[Type[ContentItem]],
+        feed_url: str,
+        feed_title: str,
+        feed_desc: str = None):
     fg = FeedGenerator()
 
-    items: List[TGPostDataclass] = reversed(feed.fetch_all(after_date=after_date))
-
-    fg.id(feed.url)
-    fg.title(f'TG | {feed.api_object.channel_name}')
-    fg.author({'name': feed.api_object.channel_name, 'uri': feed.url})
-    fg.link(href=feed.url, rel='alternate')
-    fg.logo(feed.api_object.channel_img_url)
-    fg.subtitle(feed.api_object.channel_desc)
+    fg.id(feed_url)
+    fg.title(f'TG | {feed_title}')
+    fg.author({'name': feed_title, 'uri': feed_url})
+    fg.link(href=feed_url, rel='alternate')
+    # fg.logo(feed.api_object.channel_img_url)
+    if feed_desc:
+        fg.subtitle(feed_desc)
     # fg.link(href='https://larskiesow.de/test.atom', rel='self')
     # fg.language('en')
 
@@ -64,7 +68,7 @@ def gen_rss(feed: Feed, after_date: datetime.date = None):
             )
         fe.published(dt)
 
-    dirname = f'feeds/{feed.api_object.channel_name}'
+    dirname = f'feeds/{feed_title}'
     if not os.path.exists(dirname):
         os.mkdir(dirname)
 
@@ -76,10 +80,22 @@ if __name__ == "__main__":
     week_delta = datetime.timedelta(days=7)
     last_n_weeks = lambda n: datetime.date.today() - n * week_delta
 
-    aliases = ['prostyemisli', 'notboring_tech']
+    aliases = list(
+        filter(
+            lambda x: not x.startswith('#'),
+            map(
+                str.strip,
+                open('tg_aliases').readlines()
+            )
+        )
+    )
 
     for i in aliases:
-        gen_rss(
-            TGFeed(i),
-            after_date=last_n_weeks(4)
-        )
+        f = TGFeed(i)
+        items = f.fetch_all(after_date=last_n_weeks(3))
+
+        gen_rss(items,
+                feed_url=f.url,
+                feed_title=f.api_object.channel_name,
+                feed_desc=f.api_object.channel_desc)
+

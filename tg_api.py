@@ -26,6 +26,7 @@ class TGApiChannel(ApiClass):
     next_url: Optional[str] = None
 
     def __init__(self, url: str):
+        print(f'init with {url}')
         self.next_url = url
 
         super().__init__(
@@ -89,6 +90,10 @@ class TGApiChannel(ApiClass):
             recursive=True
         )
 
+        if not messages_more_tag:
+            print('Retrying fetch...')
+            self.fetch_next_posts_page(fetch_url)  # Try to fetch again
+
         if messages_more_tag.get('data-after'):  # We reached end of posts list
             self.next_url = None
         else:
@@ -116,13 +121,16 @@ class TGApiChannel(ApiClass):
         if link_preview_wrapper:  # There is a preview section
             link_preview = link_preview_wrapper.get('href')
 
-            link_preview_img_tag = post.findChild(name='i', attrs={'class': 'link_preview_right_image'})
-            if link_preview_img_tag is None:
-                link_preview_img_tag = post.findChild(name='i', attrs={'class': 'link_preview_image'})
+            link_preview_img_tag = post.findChild(name='i', attrs={'class': 'link_preview_right_image'}) or \
+                                   post.findChild(name='i', attrs={'class': 'link_preview_image'}) or \
+                                   post.findChild(name='i', attrs={'class': 'link_preview_video_thumb'})
 
-            link_preview_img_tag_style = link_preview_img_tag.get('style')
-            r = r"background-image:url\('(.*)'\)"
-            link_preview_img = re.findall(r, link_preview_img_tag_style)[0]
+            if link_preview_img_tag:
+                link_preview_img_tag_style = link_preview_img_tag.get('style')
+                r = r"background-image:url\('(.*)'\)"
+                link_preview_img = re.findall(r, link_preview_img_tag_style)[0]
+            else:
+                link_preview_img = None
         else:
             link_preview = None
             link_preview_img = None
