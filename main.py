@@ -59,7 +59,7 @@ def gen_rss(feed: Feed, after_date: datetime.date = None):
             fe.link(
                 href=i.preview_img_url,
                 rel='enclosure',
-                type='png'
+                type=f"media/{i.preview_img_url[i.preview_img_url.rfind('.') + 1:]}"
             )
         fe.published(dt)
 
