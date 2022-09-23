@@ -1,6 +1,7 @@
 import datetime
+import pprint
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Type
 
 import requests
 
@@ -33,6 +34,7 @@ class ContentItem:
     Base interface defining Feed.fetch_all() return type
     """
 
+    id: int  # Unique attr
     url: str
     pub_date: datetime.date
     title: Optional[str] = None
@@ -67,3 +69,37 @@ YT_API_KEY = open('.YT_API_KEY').readline()
 YT_API_MAX_RESULTS_PER_PAGE = 50
 YT_BASE_API_URL = "https://www.googleapis.com/youtube/v3/search"
 TG_BASE_URL = 'https://t.me'
+
+
+class Feed:
+    ContentItemClass = ContentItem
+    api_class: Type[ApiClass] = ApiClass
+
+    def __init__(self, url: str):
+        self.url = url
+        self.api_object = self.api_class(url)
+
+    def fetch_all(self, after_date: datetime.date = None) -> List[ContentItem]:
+        """
+        Base function to get new updates from given feed.
+        Must be overridden by every Sub-class.
+        :return: List[ContentItem]
+        """
+        if after_date:
+            if self.api_class.SUPPORT_FILTER_BY_DATE:
+                self.api_object.published_after_param = after_date
+            else:
+                result = list()
+                try:
+                    for i in iter(self.api_object):
+                        if i.pub_date > after_date:
+                            result.append(i)
+                        else:
+                            raise StopIteration
+                except StopIteration:
+                    pprint.pprint(result)
+                    return result
+
+        result = list(self.api_object)  # Invokes generator with http requests
+        pprint.pprint(result)
+        return result
