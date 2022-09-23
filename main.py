@@ -34,11 +34,10 @@ def gen_rss(feed: Feed, after_date: datetime.date = None):
     items: List[TGPostDataclass] = reversed(feed.fetch_all(after_date=after_date))
 
     fg.id(feed.url)
-    fg.title(f'TG Channel feed [TEST] {feed.api_object.channel_name}')
-    fg.author({'name': 'feed-aggregator', 'uri': feed.url})
+    fg.title(f'TG | {feed.api_object.channel_name}')
+    fg.author({'name': feed.api_object.channel_name, 'uri': feed.url})
     fg.link(href=feed.url, rel='alternate')
     fg.logo(feed.api_object.channel_img_url)
-    # fg.subtitle('_Subtitle_')
     fg.subtitle(feed.api_object.channel_desc)
     # fg.link(href='https://larskiesow.de/test.atom', rel='self')
     # fg.language('en')
@@ -50,11 +49,13 @@ def gen_rss(feed: Feed, after_date: datetime.date = None):
             datetime.timezone.utc
         )
 
+        link = i.preview_link_url if i.preview_link_url else i.url
+
         fe = fg.add_entry()
         fe.id(i.url)
-        fe.title(shortened_text(i.text, 30))
+        fe.title(shortened_text(i.text, 50))
         fe.content(i.text)
-        fe.link(href=i.url)
+        fe.link(href=link)
         if i.preview_img_url:
             fe.link(
                 href=i.preview_img_url,
@@ -75,8 +76,10 @@ if __name__ == "__main__":
     week_delta = datetime.timedelta(days=7)
     last_n_weeks = lambda n: datetime.date.today() - n * week_delta
 
-    gen_rss(
-        TGFeed('prostyemisli'),
-        # TGFeed('black_triangle_tg'),
-        after_date=last_n_weeks(5)
-    )
+    aliases = ['prostyemisli', 'notboring_tech']
+
+    for i in aliases:
+        gen_rss(
+            TGFeed(i),
+            after_date=last_n_weeks(4)
+        )
