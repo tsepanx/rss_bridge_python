@@ -87,14 +87,14 @@ def gen_rss(
 week_delta = datetime.timedelta(days=7)
 last_n_weeks = lambda n: datetime.date.today() - n * week_delta
 
-if __name__ == "__main__":
-    tg_alias = 'black_triangle_tg'
-    feed = TGFeed(tg_alias)
-    feed.fetch_all(
-        last_n_weeks(1)
-    )
+# if __name__ == "__main__":
+#     tg_alias = 'black_triangle_tg'
+#     feed = TGFeed(tg_alias)
+#     feed.fetch_all(
+#         last_n_weeks(1)
+#     )
 
-elif __name__ == "__main__":
+if __name__ == "__main__":
     aliases = list(
         filter(
             lambda x: not x.startswith('#'),
@@ -107,7 +107,7 @@ elif __name__ == "__main__":
 
     for i in aliases:
         f = TGFeed(i)
-        items = f.fetch_all(after_date=last_n_weeks(3))
+        items = f.fetch_all(after_date=last_n_weeks(1))
 
         gen_rss(items,
                 feed_url=f.url,
