@@ -71,7 +71,10 @@ def gen_rss(
             )
         fe.published(dt)
 
-    dirname = f'feeds/{feed_title}'
+    dirname = f'feeds/{feed_title.replace(" ", "_")}'
+    if not os.path.exists('feeds'):
+        os.mkdir('feeds')
+
     if not os.path.exists(dirname):
         os.mkdir(dirname)
 
@@ -101,4 +104,3 @@ if __name__ == "__main__":
                 feed_url=f.url,
                 feed_title=f.api_object.channel_name,
                 feed_desc=f.api_object.channel_desc)
-
