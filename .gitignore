@@ -1,4 +1,5 @@
 __pycache__/
 .idea/
 .YT_API_KEY*
+feeds/
 tg_aliases
