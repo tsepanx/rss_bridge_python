@@ -76,7 +76,7 @@ if __name__ == "__main__":
     last_n_weeks = lambda n: datetime.date.today() - n * week_delta
 
     gen_rss(
-        # TGFeed('notboring_tech'),
-        TGFeed('black_triangle_tg'),
-        after_date=last_n_weeks(1)
+        TGFeed('prostyemisli'),
+        # TGFeed('black_triangle_tg'),
+        after_date=last_n_weeks(5)
     )
