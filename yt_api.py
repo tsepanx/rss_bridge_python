@@ -77,9 +77,9 @@ class YTApiChannel(ApiClass):
                 _ApiFields.PAGE_TOKEN: page_token
             })
 
-        if self.published_after_param and self.SUPPORT_FILTER_BY_DATE:
+        if self._published_after_param and self.SUPPORT_FILTER_BY_DATE:
             _params.update({
-                    _ApiFields.PUBLISHED_AFTER: to_yt_datetime_param(self.published_after_param)
+                    _ApiFields.PUBLISHED_AFTER: to_yt_datetime_param(self._published_after_param)
                 })
 
         print('Making YT request...')
@@ -110,7 +110,7 @@ class YTApiChannel(ApiClass):
 
 if __name__ == "__main__":
     gen = YTApiChannel("https://youtube.com/channel/UCVls1GmFKf6WlTraIb_IaJg")
-    gen.published_after_param = date(2022, 9, 15)
+    gen._published_after_param = date(2022, 9, 15)
 
     videos_list = list(gen)
 

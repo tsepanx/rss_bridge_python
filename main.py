@@ -1,42 +1,14 @@
 import datetime
+import os
 import pprint
-from typing import List, Type
+from typing import List, Type, TypeVar
+
+from feedgen.feed import FeedGenerator
 
 from tg_api import TGPostDataclass, TGApiChannel
-from utils import ContentItem, ApiClass
+from utils import shortened_text, Feed, ContentItem
 from yt_api import YTVideoDataclass, YTApiChannel
 
-
-class Feed:
-    ContentItemClass = ContentItem
-    api_class: Type[ApiClass] = ApiClass
-
-    def __init__(self, url: str):
-        self.url = url
-        self.api_object = self.api_class(url)
-
-    def fetch_all(self, after_date: datetime.date = None) -> List[ContentItem]:
-        """
-        Base function to get new updates from given feed.
-        Must be overridden by every Sub-class.
-        :return: List[ContentItem]
-        """
-        if after_date:
-            if self.api_class.SUPPORT_FILTER_BY_DATE:
-                self.api_object.published_after_param = after_date
-            else:
-                result = list()
-                try:
-                    for i in iter(self.api_object):
-                        if i.pub_date > after_date:
-                            result.append(i)
-                        else:
-                            raise StopIteration
-                except StopIteration:
-                    return result
-
-        content_items = list(self.api_object)  # TODO Fetch not all available items
-        return content_items
 
 class YTFeed(Feed):
     ContentItemClass = YTVideoDataclass
@@ -48,19 +20,85 @@ class YTFeed(Feed):
         elif channel_url:
             super().__init__(url=f'https://youtube.com/channel/{channel_id}')
 
+
 class TGFeed(Feed):
     ContentItemClass = TGPostDataclass
     api_class = TGApiChannel
 
+    def __init__(self, tg_alias: str):
+        super().__init__(f'https://t.me/s/{tg_alias}')
+
+
+def gen_rss(
+        items: List[Type[ContentItem]],
+        feed_url: str,
+        feed_title: str,
+        feed_desc: str = None):
+    fg = FeedGenerator()
+
+    fg.id(feed_url)
+    fg.title(f'TG | {feed_title}')
+    fg.author({'name': feed_title, 'uri': feed_url})
+    fg.link(href=feed_url, rel='alternate')
+    # fg.logo(feed.api_object.channel_img_url)
+    if feed_desc:
+        fg.subtitle(feed_desc)
+    # fg.link(href='https://larskiesow.de/test.atom', rel='self')
+    # fg.language('en')
+
+    for i in items:
+        dt = datetime.datetime.combine(
+            i.pub_date,
+            datetime.time.min,
+            datetime.timezone.utc
+        )
+
+        if isinstance(i, TGPostDataclass):
+            link = i.preview_link_url if i.preview_link_url else i.url
+        else:
+            link = i.url
+
+        fe = fg.add_entry()
+        fe.id(i.url)
+        fe.title(shortened_text(i.text, 50))
+        fe.content(i.text)
+        fe.link(href=link)
+        if i.preview_img_url:
+            fe.link(
+                href=i.preview_img_url,
+                rel='enclosure',
+                type=f"media/{i.preview_img_url[i.preview_img_url.rfind('.') + 1:]}"
+            )
+        fe.published(dt)
+
+    dirname = f'feeds/{feed_title}'
+    if not os.path.exists(dirname):
+        os.mkdir(dirname)
+
+    fg.atom_file(f'{dirname}/atom.xml')  # Write the ATOM feed to a file
+    fg.rss_file(f'{dirname}/rss.xml')  # Write the RSS feed to a file
+
 
 if __name__ == "__main__":
-    yt1 = YTFeed("https://youtube.com/channel/UCVls1GmFKf6WlTraIb_IaJg")
-    tg1 = TGFeed('https://t.me/s/prostyemisli')
-
     week_delta = datetime.timedelta(days=7)
     last_n_weeks = lambda n: datetime.date.today() - n * week_delta
 
-    pprint.pprint(
-        tg1.fetch_all(after_date=last_n_weeks(2))
+    aliases = list(
+        filter(
+            lambda x: not x.startswith('#'),
+            map(
+                str.strip,
+                open('tg_aliases').readlines()
+            )
+        )
     )
-    # pprint.pprint(yt1.fetch_all())
+
+    for i in aliases:
+        f = TGFeed(i)
+        items = f.fetch_all(after_date=last_n_weeks(3))
+
+        gen_rss(items,
+                feed_url=f.url,
+                feed_title=f.api_object.channel_name,
+                feed_desc=f.api_object.channel_desc)
+

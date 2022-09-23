@@ -26,25 +26,41 @@ class TGApiChannel(ApiClass):
     next_url: Optional[str] = None
 
     def __init__(self, url: str):
+        print(f'init with {url}')
         self.next_url = url
 
         super().__init__(
             url=url
         )
 
-    def fetch_channel_name(self):
+    def fetch_channel_metadata(self):
         req = logged_get(self.url)
         soup = bs4.BeautifulSoup(req.text, "html.parser")
 
         # --- Parse channel title ---
-        channel_title_wrapper = soup.find(
+        channel_metadata_wrapper = soup.find(
             name='div', attrs={
-                'class': 'tgme_channel_info_header_title'},
+                'class': 'tgme_channel_info_header'},
             recursive=True
         )
-        channel_title_tag = channel_title_wrapper.findChild(name='span')
-        channel_name = channel_title_tag.contents[0]
-        print(channel_name)
+
+        channel_title = channel_metadata_wrapper.findChild(name='span').contents[0]
+
+        channel_img_url = channel_metadata_wrapper.findChild(name='img', recursive=True)
+        channel_img_url = channel_img_url.get('src')
+
+        channel_desc = soup.findChild(
+            name='div', attrs={
+                'class': 'tgme_channel_info_description'
+            },
+            recursive=True
+        ).contents[0]
+
+        self.channel_name = str(channel_title)
+        self.channel_img_url = channel_img_url
+        self.channel_desc = str(channel_desc)
+
+        # print(self.channel_name, self.channel_img_url, self.channel_desc, sep='\n')
 
     # --- Iterator related funcs ---
     # @lru_cache
@@ -74,6 +90,10 @@ class TGApiChannel(ApiClass):
             recursive=True
         )
 
+        if not messages_more_tag:
+            print('Retrying fetch...')
+            self.fetch_next_posts_page(fetch_url)  # Try to fetch again
+
         if messages_more_tag.get('data-after'):  # We reached end of posts list
             self.next_url = None
         else:
@@ -94,19 +114,23 @@ class TGApiChannel(ApiClass):
         if not text_wrapper:
             return None
         text = text_wrapper.get_text('\n', strip=True)
+        # print(text)
 
         link_preview_wrapper = post.findChild(name='a', attrs={'class': 'tgme_widget_message_link_preview'})
 
         if link_preview_wrapper:  # There is a preview section
             link_preview = link_preview_wrapper.get('href')
 
-            link_preview_img_tag = post.findChild(name='i', attrs={'class': 'link_preview_right_image'})
-            if link_preview_img_tag is None:
-                link_preview_img_tag = post.findChild(name='i', attrs={'class': 'link_preview_image'})
+            link_preview_img_tag = post.findChild(name='i', attrs={'class': 'link_preview_right_image'}) or \
+                                   post.findChild(name='i', attrs={'class': 'link_preview_image'}) or \
+                                   post.findChild(name='i', attrs={'class': 'link_preview_video_thumb'})
 
-            link_preview_img_tag_style = link_preview_img_tag.get('style')
-            r = r"background-image:url\('(.*)'\)"
-            link_preview_img = re.findall(r, link_preview_img_tag_style)[0]
+            if link_preview_img_tag:
+                link_preview_img_tag_style = link_preview_img_tag.get('style')
+                r = r"background-image:url\('(.*)'\)"
+                link_preview_img = re.findall(r, link_preview_img_tag_style)[0]
+            else:
+                link_preview_img = None
         else:
             link_preview = None
             link_preview_img = None
