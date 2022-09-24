@@ -15,7 +15,7 @@ app = FastAPI()
 async def get_tg_feed(
         username: str,
         rss_format: RssFormat = RssFormat.Atom,
-        entries_count: Optional[int] = None,
+        max_items: Optional[int] = None,
         days: Optional[int] = None
 ):
     tg_feed = TGFeed(channel_username=username)
@@ -25,8 +25,11 @@ async def get_tg_feed(
     else:
         after_date = None
 
+    if not (max_items or after_date):
+        max_items = 20
+
     items = tg_feed.fetch_all(
-        entries_count=entries_count,
+        entries_count=max_items,
         after_date=after_date
     )
 
