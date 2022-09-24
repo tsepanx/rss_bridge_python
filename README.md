@@ -1,7 +1,6 @@
 
 # RSS Bridge (~~Feed aggregator~~)
 
-
 ### Design
 For now, this project pretends to be an alternative of [rss-bridge](https://github.com/RSS-Bridge/rss-bridge),
 customized for my specific needs.
