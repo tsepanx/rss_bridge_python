@@ -115,10 +115,11 @@ class TGApiChannel(ApiClass):
         if not text_wrapper:
             return None
         text = text_wrapper.get_text('\n', strip=True)
-        html_content = html.escape(
-            str(text_wrapper),
-            quote=False
-        )
+        # html_content = html.escape(
+        #     str(text_wrapper),
+        #     quote=False
+        # )
+        html_content = str(text_wrapper)
         # pprint.pprint(text, text2)
 
         link_preview_wrapper = post.findChild(name='a', attrs={'class': 'tgme_widget_message_link_preview'})
