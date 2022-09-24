@@ -1,14 +1,14 @@
 import datetime
 import os
 import re
-import html
 from dataclasses import dataclass
 from typing import Optional, List, Sequence
 
 import bs4
 from feedgen.feed import FeedGenerator
 
-from utils import shortened_text, logged_get, ContentItem, ApiClass, TG_BASE_URL, Feed, RssFormat
+from utils import shortened_text, logged_get, TG_BASE_URL, RssFormat
+from base import ContentItem, ApiClass, Feed
 
 
 @dataclass
@@ -63,8 +63,6 @@ class TGApiChannel(ApiClass):
         self.channel_img_url = channel_img_url
         self.channel_desc = str(channel_desc)
 
-        # print(self.channel_name, self.channel_img_url, self.channel_desc, sep='\n')
-
     # --- Iterator related funcs ---
     # @lru_cache
     def fetch_next_posts_page(self, fetch_url: str):  # -> Optional[str]:
@@ -115,12 +113,7 @@ class TGApiChannel(ApiClass):
         if not text_wrapper:
             return None
         text = text_wrapper.get_text('\n', strip=True)
-        # html_content = html.escape(
-        #     str(text_wrapper),
-        #     quote=False
-        # )
         html_content = str(text_wrapper)
-        # pprint.pprint(text, text2)
 
         link_preview_wrapper = post.findChild(name='a', attrs={'class': 'tgme_widget_message_link_preview'})
 
@@ -210,8 +203,6 @@ def tg_gen_rss(
     # fg.logo(feed.api_object.channel_img_url)
     if feed_desc:
         fg.subtitle(feed_desc)
-    # fg.link(href='https://larskiesow.de/test.atom', rel='self')
-    # fg.language('en')
 
     for i in items:
         link = i.preview_link_url if i.preview_link_url else i.url

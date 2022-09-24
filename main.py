@@ -34,34 +34,3 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=8080
     )
-
-
-# if __name__ == "__main__":
-#     # TODO html as content in rss
-
-    # TGFeed(channel_url='https://t.me/s/black_triangle_tg')
-
-    # channel_username = 'black_triangle_tg'
-    # feed = TGFeed(channel_username)
-    # feed.fetch_all(
-    #     last_n_weeks(1)
-    # )
-
-    # aliases = list(
-    #     filter(
-    #         lambda x: not x.startswith('#'),
-    #         map(
-    #             str.strip,
-    #             open('tg_aliases').readlines()
-    #         )
-    #     )
-    # )
-    #
-    # for i in aliases:
-    #     f = TGFeed(i)
-    #     items = f.fetch_all(after_date=last_n_weeks(1))
-    #
-    #     tg_gen_rss(items,
-    #             feed_url=f.url,
-    #             feed_title=f.channel_username,
-    #             feed_desc=f.api_object.channel_desc)

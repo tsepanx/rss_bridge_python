@@ -3,8 +3,9 @@ from datetime import datetime, date
 import re
 from typing import List
 
-from utils import shortened_text, logged_get, ContentItem, ApiClass, YT_API_KEY, YT_BASE_API_URL, \
-    YT_API_MAX_RESULTS_PER_PAGE, Feed
+from utils import shortened_text, logged_get, YT_API_KEY, YT_BASE_API_URL, \
+    YT_API_MAX_RESULTS_PER_PAGE
+from base import ContentItem, ApiClass, Feed
 
 
 def to_yt_datetime_param(d: date) -> str:
