@@ -1,12 +1,14 @@
 import datetime
+import os
 import re
 import html
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import Optional, List, Sequence
 
 import bs4
+from feedgen.feed import FeedGenerator
 
-from utils import shortened_text, logged_get, ContentItem, ApiClass, TG_BASE_URL, Feed
+from utils import shortened_text, logged_get, ContentItem, ApiClass, TG_BASE_URL, Feed, RssFormat
 
 
 @dataclass
@@ -178,8 +180,83 @@ if __name__ == "__main__":
 class TGFeed(Feed):
     ContentItemClass = TGPostDataclass
     api_class = TGApiChannel
-    tg_alias: str
+    username: str
 
-    def __init__(self, tg_alias: str):
-        self.tg_alias = tg_alias
-        super().__init__(f'https://t.me/s/{tg_alias}')
+    def __init__(self,
+                 channel_username: str = None,
+                 channel_url: str = None
+                 ):
+        if channel_url:
+            channel_username = re.search('[^/]+(?=/$|$)', channel_url).group()
+
+        self.username = channel_username
+        super().__init__(f'https://t.me/s/{channel_username}')
+
+
+def tg_gen_rss(
+        feed: TGFeed,
+        items: Sequence[TGPostDataclass],
+        rss_format: RssFormat):
+
+    feed_url = feed.url
+    feed_title = f'TG | {feed.username}'
+    feed_desc = feed.api_object.channel_desc
+
+    fg = FeedGenerator()
+
+    fg.id(feed_url)
+    fg.title(feed_title)
+    fg.author({'name': feed_title, 'uri': feed_url})
+    fg.link(href=feed_url, rel='alternate')
+    # fg.logo(feed.api_object.channel_img_url)
+    if feed_desc:
+        fg.subtitle(feed_desc)
+    # fg.link(href='https://larskiesow.de/test.atom', rel='self')
+    # fg.language('en')
+
+    for i in items:
+        dt = datetime.datetime.combine(
+            i.pub_date,
+            datetime.time.min,
+            datetime.timezone.utc
+        )
+
+        link = i.preview_link_url if i.preview_link_url else i.url
+
+        if i.html_content:
+            content = i.html_content
+            content_type = 'html'
+        else:
+            content = i.text
+            content_type = None
+
+        fe = fg.add_entry()
+        fe.id(i.url)
+        fe.title(shortened_text(i.text, 50))
+        fe.content(content, type=content_type)
+        fe.link(href=link)
+        if i.preview_img_url:
+            fe.link(
+                href=i.preview_img_url,
+                rel='enclosure',
+                type=f"media/{i.preview_img_url[i.preview_img_url.rfind('.') + 1:]}"
+            )
+        fe.published(dt)
+
+    dirname = f'feeds/{feed.username}'
+    if not os.path.exists('feeds'):
+        os.mkdir('feeds')
+
+    if not os.path.exists(dirname):
+        os.mkdir(dirname)
+
+    if rss_format is RssFormat.Rss:
+        path = f'{dirname}/rss.xml'
+        func = fg.rss_file
+    elif rss_format is RssFormat.Atom:
+        path = f'{dirname}/atom.xml'
+        func = fg.atom_file
+    else: raise Exception
+
+    func(path, pretty=True)
+    return path
