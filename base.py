@@ -1,7 +1,8 @@
 import pprint
+import typing
 from dataclasses import dataclass
 from datetime import datetime, date
-from typing import Optional, List, Type, Sequence, TypeVar
+from typing import Optional, List, Type, Sequence, TypeVar, Iterable
 
 from utils import to_tg_datetime
 
@@ -62,33 +63,31 @@ class Feed:
         Must be overridden by every Sub-class.
         :return: list of fetched entries
         """
+
+        if not (after_date or entries_count):
+            entries_count = 20
+
         if after_date:
             if self.api_class.SUPPORT_FILTER_BY_DATE:
                 self.api_object._published_after_param = after_date
-            else:
-                result = list()
-                try:
-                    while i := next(self.api_object):
-                        if i.pub_date > to_tg_datetime(after_date):
-                            result.append(i)
-                        else:
-                            raise StopIteration
-                except StopIteration:
-                    pprint.pprint(result)
-                    return result
-                finally:
-                    pass
+                return self.fetch_all(
+                    entries_count=entries_count,
+                    after_date=None
+                )
 
-        if entries_count:
-            result = list()
-            for i in range(entries_count):
-                try:
-                    c = next(self.api_object)
-                    result.append(c)
-                except StopIteration:
-                    return result
-            return result
+        def inner() -> typing.Generator:
+            try:
+                i = 0
+                while c := next(self.api_object):
+                    if entries_count:  # Limited by max count of entries
+                        if i >= entries_count:
+                            return
+                    if after_date:  # Limited by min date
+                        if c.pub_date > to_tg_datetime(after_date):
+                            return
+                    yield c
+                    i += 1
+            except StopIteration:
+                return
 
-        result = list(self.api_object)  # TODO Remove this block
-        pprint.pprint(result)
-        return result
+        return list(inner())
