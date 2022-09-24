@@ -205,7 +205,8 @@ def tg_gen_rss(
         fg.subtitle(feed_desc)
 
     for i in items:
-        link = i.preview_link_url if i.preview_link_url else i.url
+        # link = i.preview_link_url if i.preview_link_url else i.url
+        link = i.url
 
         if i.html_content:
             content = i.html_content
