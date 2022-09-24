@@ -238,10 +238,11 @@ def tg_gen_rss(
             )
         fe.published(i.pub_date)
 
-    dirname = f'feeds/{feed.username}'
-    if not os.path.exists('feeds'):
-        os.mkdir('feeds')
+    dirname = f'feeds'
+    if not os.path.exists(dirname):
+        os.mkdir(dirname)
 
+    dirname = os.path.join(dirname, feed.username)
     if not os.path.exists(dirname):
         os.mkdir(dirname)
 

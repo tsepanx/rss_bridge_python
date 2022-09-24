@@ -7,7 +7,7 @@ sudo echo 1
 restart_process() {
     echo 'LOG | Restarting process'
     sudo kill $FOO_PID || true
-    python ./main.py &
+    python ./src/main.py &
     FOO_PID=$!
     echo 'LOG | Started process'
 }

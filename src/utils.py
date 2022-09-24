@@ -1,10 +1,11 @@
 import datetime
 import enum
+import os
 from datetime import date, datetime, timezone, timedelta
 
 import requests
 
-YT_API_KEY = open('.YT_API_KEY').readline()
+YT_API_KEY = open(os.path.dirname(__file__) + '/../.YT_API_KEY').readline()
 YT_API_MAX_RESULTS_PER_PAGE = 50
 YT_BASE_API_URL = "https://www.googleapis.com/youtube/v3/search"
 TG_BASE_URL = 'https://t.me'

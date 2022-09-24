@@ -13,6 +13,7 @@ May be integrated with my other projects in the future.
   - ~~Mastodon~~: Seems that no rss available
   - Gemini: Requires additional non-http parsing
 
-### Features to implement
+### TODO & Features to implement
+- Write tests
 - Param for feed: whitelist/blacklist of keywords in title/text
 - DB support, to cache existing `rss` files

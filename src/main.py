@@ -16,7 +16,7 @@ async def get_feed(
         username: str,
         format: Optional[RssFormat] = RssFormat.Atom,
         count: Optional[int] = None,
-        days: Optional[int] = None,  # TODO Add filter by ads posts
+        days: Optional[int] = None,
         with_enclosures: Optional[bool] = False
 ):
     tg_feed = TGFeed(channel_username=username)
@@ -35,6 +35,8 @@ async def get_feed(
         rss_format=format,
         use_enclosures=with_enclosures,
     )
+
+    print(f'Result path: {path}')
 
     return FileResponse(
         path=path,
