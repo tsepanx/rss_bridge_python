@@ -118,7 +118,7 @@ class TGApiChannel(ApiClass):
         link_preview_wrapper = post.findChild(name='a', attrs={'class': 'tgme_widget_message_link_preview'})
 
         if link_preview_wrapper:  # There is a preview section
-            link_preview = link_preview_wrapper.get('href')
+            link_preview_url = link_preview_wrapper.get('href')
 
             link_preview_img_tag = post.findChild(name='i', attrs={'class': 'link_preview_right_image'}) or \
                                    post.findChild(name='i', attrs={'class': 'link_preview_image'}) or \
@@ -130,16 +130,24 @@ class TGApiChannel(ApiClass):
                 link_preview_img = re.findall(r, link_preview_img_tag_style)[0]
             else:
                 link_preview_img = None
+
+            link_preview_title = link_preview_wrapper.find(attrs={'class': 'link_preview_title'})
+            link_preview_desc = link_preview_wrapper.find(attrs={'class': 'link_preview_description'})
+
+            if COMBINE_HTML_WITH_PREVIEW := True:  # Combine item.html_content with preview title + desc
+                html_content += f'{link_preview_title}<br/>{link_preview_desc}'
         else:
-            link_preview = None
+            link_preview_url = None
             link_preview_img = None
+            link_preview_title = None
+            link_preview_desc = None
 
         return TGPostDataclass(
             pub_date=post_date,
             url=post_href,
             text=text,
             html_content=html_content,
-            preview_link_url=link_preview,
+            preview_link_url=link_preview_url,
             preview_img_url=link_preview_img,
         )
 
