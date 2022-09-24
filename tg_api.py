@@ -1,12 +1,10 @@
 import datetime
 import os
 import re
+import bs4
 from dataclasses import dataclass
 from typing import Optional, List, Sequence
-
-import bs4
 from feedgen.feed import FeedGenerator
-from pydantic.tools import lru_cache
 
 from utils import shortened_text, logged_get, TG_BASE_URL, RssFormat, TG_COMBINE_HTML_WITH_PREVIEW
 from base import ContentItem, ApiClass, Feed
@@ -136,7 +134,7 @@ class TGApiChannel(ApiClass):
             link_preview_desc = link_preview_wrapper.find(attrs={'class': 'link_preview_description'})
 
             if TG_COMBINE_HTML_WITH_PREVIEW:
-                html_content += f'{link_preview_title}<br/>{link_preview_desc}'
+                html_content += f'<br/>Preview content:<br/>{link_preview_title}<br/>{link_preview_desc}'
         else:
             link_preview_url = None
             link_preview_img = None
