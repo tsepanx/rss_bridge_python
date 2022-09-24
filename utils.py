@@ -1,9 +1,13 @@
 import datetime
+import os
 import pprint
 from dataclasses import dataclass
 from typing import List, Optional, Type
 
 import requests
+from feedgen.feed import FeedGenerator
+
+from tg_api import TGPostDataclass
 
 
 def as_list(func):
@@ -81,7 +85,7 @@ class Feed:
         self.url = url
         self.api_object = self.api_class(url)
 
-    def fetch_all(self, after_date: datetime.date = None) -> List[Type[ContentItem]]:
+    def fetch_all(self, last_n_entries: int = None, after_date: datetime.date = None) -> List[ContentItem]:
         """
         Base function to get new updates from given feed.
         Must be overridden by every Sub-class.
@@ -98,12 +102,87 @@ class Feed:
                             result.append(i)
                         else:
                             raise StopIteration
-                except StopIteration as e:
+                except StopIteration:
                     pprint.pprint(result)
                     return result
                 finally:
                     pass
 
+        if last_n_entries:
+            result = list()
+            for i in range(last_n_entries):
+                try:
+                    c = next(self.api_object)
+                    result.append(c)
+                except StopIteration:
+                    return result
+            return result
+
         result = list(self.api_object)  # Invokes generator with http requests
         pprint.pprint(result)
         return result
+
+
+def gen_rss(
+        items: List[Type[ContentItem]],
+        feed_url: str,
+        feed_title: str,
+        feed_desc: str = None):
+    fg = FeedGenerator()
+
+    fg.id(feed_url)
+    fg.title(f'TG | {feed_title}')
+    fg.author({'name': feed_title, 'uri': feed_url})
+    fg.link(href=feed_url, rel='alternate')
+    # fg.logo(feed.api_object.channel_img_url)
+    if feed_desc:
+        fg.subtitle(feed_desc)
+    # fg.link(href='https://larskiesow.de/test.atom', rel='self')
+    # fg.language('en')
+
+    for i in items:
+        dt = datetime.datetime.combine(
+            i.pub_date,
+            datetime.time.min,
+            datetime.timezone.utc
+        )
+
+        if isinstance(i, TGPostDataclass):  # Make tg preview link as rss item link
+            link = i.preview_link_url if i.preview_link_url else i.url
+        else:
+            link = i.url
+
+        if i.html_content:
+            content = i.html_content
+            content_type = 'html'
+        else:
+            content = i.text
+            content_type = None
+
+        fe = fg.add_entry()
+        fe.id(i.url)
+        fe.title(shortened_text(i.text, 50))
+        fe.content(content, type=content_type)
+        fe.link(href=link)
+        if i.preview_img_url:
+            fe.link(
+                href=i.preview_img_url,
+                rel='enclosure',
+                type=f"media/{i.preview_img_url[i.preview_img_url.rfind('.') + 1:]}"
+            )
+        fe.published(dt)
+
+    # dirname = f'feeds/{feed_title.replace(" ", "_")}'
+    dirname = f'feeds/{feed_title}'
+    if not os.path.exists('feeds'):
+        os.mkdir('feeds')
+
+    if not os.path.exists(dirname):
+        os.mkdir(dirname)
+
+    fg.atom_file(f'{dirname}/atom.xml')  # Write the ATOM feed to a file
+    fg.rss_file(f'{dirname}/rss.xml')  # Write the RSS feed to a file
+
+
+week_delta = datetime.timedelta(days=7)
+last_n_weeks = lambda n: datetime.date.today() - n * week_delta

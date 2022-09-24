@@ -6,7 +6,7 @@ from typing import Optional, List
 
 import bs4
 
-from utils import shortened_text, logged_get, ContentItem, ApiClass, TG_BASE_URL
+from utils import shortened_text, logged_get, ContentItem, ApiClass, TG_BASE_URL, Feed
 
 
 @dataclass
@@ -173,3 +173,13 @@ if __name__ == "__main__":
     for i in range(101):
         c = next(gen)
         print(c)
+
+
+class TGFeed(Feed):
+    ContentItemClass = TGPostDataclass
+    api_class = TGApiChannel
+    tg_alias: str
+
+    def __init__(self, tg_alias: str):
+        self.tg_alias = tg_alias
+        super().__init__(f'https://t.me/s/{tg_alias}')

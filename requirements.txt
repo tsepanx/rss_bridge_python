@@ -3,3 +3,6 @@ feedparser
 requests
 beautifulsoup4
 feedgen
+fastapi
+uvicorn[standard]
+pydantic

@@ -4,7 +4,7 @@ import re
 from typing import List
 
 from utils import shortened_text, logged_get, ContentItem, ApiClass, YT_API_KEY, YT_BASE_API_URL, \
-    YT_API_MAX_RESULTS_PER_PAGE
+    YT_API_MAX_RESULTS_PER_PAGE, Feed
 
 
 def to_yt_datetime_param(d: date) -> str:
@@ -118,3 +118,14 @@ if __name__ == "__main__":
         # c = next(gen)
         c = videos_list[i]
         print(c)
+
+
+class YTFeed(Feed):
+    ContentItemClass = YTVideoDataclass
+    api_class = YTApiChannel
+
+    def __init__(self, channel_url=None, channel_id=None):
+        if channel_url:
+            super().__init__(url=channel_url)
+        elif channel_url:
+            super().__init__(url=f'https://youtube.com/channel/{channel_id}')
