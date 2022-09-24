@@ -109,7 +109,7 @@ class TGApiChannel(ApiClass):
     def html_tag_to_dataclass(post: bs4.element.Tag) -> Optional[TGPostDataclass]:
         href_date_tag = post.findChild(name='a', attrs={'class': 'tgme_widget_message_date'})
         datetime_str = href_date_tag.contents[0].get('datetime')
-        post_date = datetime.datetime.fromisoformat(datetime_str).date()  # Convert from string to pythonic format
+        post_date = datetime.datetime.fromisoformat(datetime_str)  # Convert from string to pythonic format
 
         post_href = href_date_tag.get('href')
 
@@ -215,12 +215,6 @@ def tg_gen_rss(
     # fg.language('en')
 
     for i in items:
-        dt = datetime.datetime.combine(
-            i.pub_date,
-            datetime.time.min,
-            datetime.timezone.utc
-        )
-
         link = i.preview_link_url if i.preview_link_url else i.url
 
         if i.html_content:
@@ -241,7 +235,7 @@ def tg_gen_rss(
                 rel='enclosure',
                 type=f"media/{i.preview_img_url[i.preview_img_url.rfind('.') + 1:]}"
             )
-        fe.published(dt)
+        fe.published(i.pub_date)
 
     dirname = f'feeds/{feed.username}'
     if not os.path.exists('feeds'):

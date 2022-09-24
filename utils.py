@@ -2,9 +2,17 @@ import datetime
 import enum
 import pprint
 from dataclasses import dataclass
+from datetime import date, datetime, timezone, timedelta
 from typing import List, Optional, Type, Sequence, TypeVar
 
 import requests
+
+YT_API_KEY = open('.YT_API_KEY').readline()
+YT_API_MAX_RESULTS_PER_PAGE = 50
+YT_BASE_API_URL = "https://www.googleapis.com/youtube/v3/search"
+TG_BASE_URL = 'https://t.me'
+
+last_n_weeks = lambda n: date.today() - n * timedelta(days=7)
 
 
 def as_list(func):
@@ -28,9 +36,19 @@ def logged_get(url, *args, **kwargs):
     print(f'[{req.status_code}] | {req.url}')
     return req
 
+
+def to_tg_datetime(d: date) -> datetime:
+    return datetime.combine(
+        d,
+        datetime.min.time(),
+        timezone.utc
+    )
+
+
 class RssFormat(str, enum.Enum):
     Atom = 'atom'
     Rss = 'rss'
+
 
 @dataclass
 class ContentItem:
@@ -40,7 +58,7 @@ class ContentItem:
 
     # id: int  # Unique attr
     url: str
-    pub_date: datetime.date
+    pub_date: datetime
     title: Optional[str] = None
     text: Optional[str] = None
     html_content: Optional[str] = None
@@ -48,8 +66,9 @@ class ContentItem:
 
 
 class ApiClass:
-    SUPPORT_FILTER_BY_DATE: Optional[bool] = False  # If api allow fetching items with date > self._published_after_param
-    _published_after_param: Optional[datetime.date] = None
+    SUPPORT_FILTER_BY_DATE: Optional[
+        bool] = False  # If api allow fetching items with date > self._published_after_param
+    _published_after_param: Optional[date] = None
     q: List = list()
     url: str
     channel_name: str
@@ -71,13 +90,9 @@ class ApiClass:
         pass
 
 
-YT_API_KEY = open('.YT_API_KEY').readline()
-YT_API_MAX_RESULTS_PER_PAGE = 50
-YT_BASE_API_URL = "https://www.googleapis.com/youtube/v3/search"
-TG_BASE_URL = 'https://t.me'
-
 # ContentItemType = Type[ContentItem]
 ContentItemType = TypeVar('ContentItemType', bound=ContentItem)
+
 
 class Feed:
     ContentItemClass: Type[ContentItem]  # = ContentItem
@@ -87,7 +102,7 @@ class Feed:
         self.url = url
         self.api_object = self.api_class(url)
 
-    def fetch_all(self, last_n_entries: int = None, after_date: datetime.date = None) -> Sequence[ContentItemType]:
+    def fetch_all(self, last_n_entries: int = None, after_date: date = None) -> Sequence[ContentItemType]:
         """
         Base function to get new updates from given feed.
         Must be overridden by every Sub-class.
@@ -100,7 +115,7 @@ class Feed:
                 result = list()
                 try:
                     while i := next(self.api_object):
-                        if i.pub_date > after_date:
+                        if i.pub_date > to_tg_datetime(after_date):
                             result.append(i)
                         else:
                             raise StopIteration
@@ -123,7 +138,3 @@ class Feed:
         result = list(self.api_object)  # Invokes generator with http requests
         pprint.pprint(result)
         return result
-
-
-week_delta = datetime.timedelta(days=7)
-last_n_weeks = lambda n: datetime.date.today() - n * week_delta
