@@ -1,11 +1,8 @@
 import datetime
 import enum
 from datetime import date, datetime, timezone, timedelta
-from typing import TypeVar
 
 import requests
-
-from base import ContentItem
 
 YT_API_KEY = open('.YT_API_KEY').readline()
 YT_API_MAX_RESULTS_PER_PAGE = 50
@@ -48,9 +45,4 @@ def to_tg_datetime(d: date) -> datetime:
 class RssFormat(str, enum.Enum):
     Atom = 'atom'
     Rss = 'rss'
-
-
-# ContentItemType = Type[ContentItem]
-ContentItemType = TypeVar('ContentItemType', bound=ContentItem)
-
 

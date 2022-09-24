@@ -1,9 +1,9 @@
 import pprint
 from dataclasses import dataclass
 from datetime import datetime, date
-from typing import Optional, List, Type, Sequence
+from typing import Optional, List, Type, Sequence, TypeVar
 
-from utils import ContentItemType, to_tg_datetime
+from utils import to_tg_datetime
 
 
 @dataclass
@@ -45,6 +45,8 @@ class ApiClass:
     def fetch_channel_metadata(self) -> str:
         pass
 
+
+ContentItemType = TypeVar('ContentItemType', bound=ContentItem)
 
 class Feed:
     ContentItemClass: Type[ContentItem]  # = ContentItem
