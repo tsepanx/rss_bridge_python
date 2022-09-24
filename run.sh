@@ -2,9 +2,11 @@
 
 # Restart 'python main.py' every time remote repo updated
 
+su
+
 restart_process() {
     echo 'LOG | Restarting process'
-    kill $FOO_PID || true
+    sudo kill $FOO_PID || true
     python ./main.py &
     FOO_PID=$!
     echo 'LOG | Started process'
