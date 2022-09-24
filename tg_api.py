@@ -191,7 +191,7 @@ def tg_gen_rss(
         rss_format: RssFormat):
 
     feed_url = feed.url
-    feed_title = f'TG | {feed.username} | {feed.api_object.channel_name}'
+    feed_title = f'TG | {feed.username}{" " * (25 - (min(25, len(feed.username))))} | {feed.api_object.channel_name}'
     feed_desc = feed.api_object.channel_desc
 
     fg = FeedGenerator()
