@@ -83,9 +83,7 @@ class TGApiChannel(ApiClass):
             recursive=True
         )
 
-        self.q.extend(
-            list(reversed(posts_list))
-        )  # TODO convert to dataclass on the fly
+        self.q.extend(posts_list)  # TODO convert to dataclass on the fly
 
         # --- Next messages page href parsing
         messages_more_tag = soup.find(
