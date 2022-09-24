@@ -12,7 +12,7 @@ app = FastAPI()
 
 
 @app.get('/tg-feed/{username}', response_class=FileResponse)
-async def tg_feed(
+async def get_tg_feed(
         username: str,
         rss_format: RssFormat = RssFormat.Atom,
         entries_count: Optional[int] = None,
