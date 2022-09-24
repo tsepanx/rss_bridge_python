@@ -2,7 +2,7 @@
 
 # Restart 'python main.py' every time remote repo updated
 
-su
+sudo echo 1
 
 restart_process() {
     echo 'LOG | Restarting process'
