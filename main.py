@@ -12,11 +12,12 @@ app = FastAPI()
 
 
 @app.get('/tg-feed/{username}', response_class=FileResponse)
-async def get_tg_feed(
+async def get_feed(
         username: str,
-        rss_format: RssFormat = RssFormat.Atom,
-        max_items: Optional[int] = None,
-        days: Optional[int] = None  # TODO Add filter by ads posts
+        format: Optional[RssFormat] = RssFormat.Atom,
+        count: Optional[int] = None,
+        days: Optional[int] = None,  # TODO Add filter by ads posts
+        with_enclosures: Optional[bool] = False
 ):
     tg_feed = TGFeed(channel_username=username)
 
@@ -25,18 +26,14 @@ async def get_tg_feed(
     else:
         after_date = None
 
-    if not (max_items or after_date):
-        max_items = 20
-
-    items = tg_feed.fetch_all(
-        entries_count=max_items,
-        after_date=after_date
-    )
-
     path = tg_gen_rss(
         feed=tg_feed,
-        items=items,
-        rss_format=rss_format
+        items=tg_feed.fetch_all(
+            entries_count=count,
+            after_date=after_date
+        ),
+        rss_format=format,
+        use_enclosures=with_enclosures,
     )
 
     return FileResponse(
@@ -45,8 +42,16 @@ async def get_tg_feed(
     )
 
 if __name__ == "__main__":
+    # feed = TGFeed('black_triangle_tg')
+    # tg_gen_rss(
+    #     feed,
+    #     feed.fetch_all(),
+    #     rss_format=RssFormat.Rss,
+    #     use_enclosures=True
+    # )
+
     uvicorn.run(
         app=app,
         host="0.0.0.0",
-        port=8080
+        port=8081
     )

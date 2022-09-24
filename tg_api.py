@@ -188,7 +188,9 @@ class TGFeed(Feed):
 def tg_gen_rss(
         feed: TGFeed,
         items: Sequence[TGPostDataclass],
-        rss_format: RssFormat):
+        rss_format: RssFormat = RssFormat.Atom,
+        use_enclosures: bool = False
+):
 
     feed_url = feed.url
     feed_title = f'TG | {feed.username}{" " * (25 - (min(25, len(feed.username))))} | {feed.api_object.channel_name}'
@@ -220,11 +222,12 @@ def tg_gen_rss(
         fe.title(shortened_text(i.text, 50))
         fe.content(content, type=content_type)
         fe.link(href=link)
-        if i.preview_img_url:
+        if use_enclosures and i.preview_img_url:
             fe.link(
                 href=i.preview_img_url,
                 rel='enclosure',
-                type=f"media/{i.preview_img_url[i.preview_img_url.rfind('.') + 1:]}"
+                type=f"{i.preview_img_url[i.preview_img_url.rfind('.') + 1:]}",
+                length=str(len(logged_get(i.preview_img_url).content))
             )
         fe.published(i.pub_date)
 
@@ -241,7 +244,7 @@ def tg_gen_rss(
     elif rss_format is RssFormat.Atom:
         path = f'{dirname}/atom.xml'
         func = fg.atom_file
-    else: raise Exception
+    else: raise Exception('No rss_format specified')
 
     func(path, pretty=True)
     return path

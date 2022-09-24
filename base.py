@@ -1,4 +1,3 @@
-import pprint
 import typing
 from dataclasses import dataclass
 from datetime import datetime, date
@@ -80,7 +79,7 @@ class Feed:
                 i = 0
                 while c := next(self.api_object):
                     if entries_count:  # Limited by max count of entries
-                        if i >= entries_count:
+                        if i >= entries_count - 1:
                             return
                     if after_date:  # Limited by min date
                         if c.pub_date > to_tg_datetime(after_date):
@@ -91,3 +90,6 @@ class Feed:
                 return
 
         return list(inner())
+
+    def __iter__(self):
+        raise Exception('Iteration not allowed. use Feed.fetch_all()')
