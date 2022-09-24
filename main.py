@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 
 from tg_api import TGFeed, tg_gen_rss
-from utils import RssFormat, last_n_weeks
+from utils import RssFormat
 
 app = FastAPI()
 
@@ -16,7 +16,7 @@ async def get_tg_feed(
         username: str,
         rss_format: RssFormat = RssFormat.Atom,
         max_items: Optional[int] = None,
-        days: Optional[int] = None
+        days: Optional[int] = None  # TODO Add filter by ads posts
 ):
     tg_feed = TGFeed(channel_username=username)
 

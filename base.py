@@ -89,6 +89,6 @@ class Feed:
                     return result
             return result
 
-        result = list(self.api_object)  # Invokes generator with http requests
+        result = list(self.api_object)  # TODO Remove this block
         pprint.pprint(result)
         return result
