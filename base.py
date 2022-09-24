@@ -54,7 +54,7 @@ class Feed:
         self.url = url
         self.api_object = self.api_class(url)
 
-    def fetch_all(self, last_n_entries: int = None, after_date: date = None) -> Sequence[ContentItemType]:
+    def fetch_all(self, entries_count: int = None, after_date: date = None) -> Sequence[ContentItemType]:
         """
         Base function to get new updates from given feed.
         Must be overridden by every Sub-class.
@@ -77,9 +77,9 @@ class Feed:
                 finally:
                     pass
 
-        if last_n_entries:
+        if entries_count:
             result = list()
-            for i in range(last_n_entries):
+            for i in range(entries_count):
                 try:
                     c = next(self.api_object)
                     result.append(c)
