@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime, date
 from typing import Optional, List, Type, Sequence, TypeVar
 
-from utils import to_tg_datetime
+from utils import to_tg_datetime, TG_DEFAULT_MAX_ENTRIES_TO_FETCH
 
 
 @dataclass
@@ -65,7 +65,7 @@ class Feed:
         """
 
         if not (after_date or entries_count):
-            entries_count = 20
+            entries_count = TG_DEFAULT_MAX_ENTRIES_TO_FETCH
 
         if after_date:
             if self.api_class.SUPPORT_FILTER_BY_DATE:
