@@ -1,7 +1,7 @@
 import typing
 from dataclasses import dataclass
 from datetime import datetime, date
-from typing import Optional, List, Type, Sequence, TypeVar, Iterable
+from typing import Optional, List, Type, Sequence, TypeVar
 
 from utils import to_tg_datetime
 
@@ -27,7 +27,7 @@ class ApiClass:
     _published_after_param: Optional[date] = None
     q: List = list()
     url: str
-    channel_name: str
+    channel_name: str = None
     channel_img_url: Optional[str] = None
     channel_desc: Optional[str] = None
 
@@ -51,6 +51,7 @@ ContentItemType = TypeVar('ContentItemType', bound=ContentItem)
 class Feed:
     ContentItemClass: Type[ContentItem]  # = ContentItem
     api_class: Type[ApiClass]  # = ApiClass
+    api_object: ApiClass = None
 
     def __init__(self, url: str):
         self.url = url

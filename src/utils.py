@@ -10,6 +10,7 @@ YT_API_MAX_RESULTS_PER_PAGE = 50
 YT_BASE_API_URL = "https://www.googleapis.com/youtube/v3/search"
 TG_BASE_URL = 'https://t.me'
 
+TG_RSS_USE_HTML = True
 TG_COMBINE_HTML_WITH_PREVIEW = True
 
 last_n_weeks = lambda n: date.today() - n * timedelta(days=7)

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Optional, List, Sequence
 from feedgen.feed import FeedGenerator
 
-from utils import shortened_text, logged_get, TG_BASE_URL, RssFormat, TG_COMBINE_HTML_WITH_PREVIEW
+from utils import shortened_text, logged_get, TG_BASE_URL, RssFormat, TG_COMBINE_HTML_WITH_PREVIEW, TG_RSS_USE_HTML
 from base import ContentItem, ApiClass, Feed
 
 
@@ -209,15 +209,14 @@ def tg_gen_rss(
     fg.title(feed_title)
     fg.author({'name': feed_title, 'uri': feed_url})
     fg.link(href=feed_url, rel='alternate')
-    # fg.logo(feed.api_object.channel_img_url)
+    fg.logo(feed.api_object.channel_img_url)
     if feed_desc:
         fg.subtitle(feed_desc)
 
-    for i in items:
-        # link = i.preview_link_url if i.preview_link_url else i.url
+    for i in reversed(items):
         link = i.url
 
-        if i.html_content:
+        if TG_RSS_USE_HTML and i.html_content:
             content = i.html_content
             content_type = 'html'
         else:

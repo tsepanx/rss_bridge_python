@@ -6,4 +6,3 @@ feedgen
 fastapi
 uvicorn[standard]
 pydantic
-PyRSS2Gen
