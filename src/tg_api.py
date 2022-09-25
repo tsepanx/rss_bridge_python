@@ -201,10 +201,10 @@ def tg_gen_rss(
 
     feed_url = feed.url
 
-    indent_size = 25 + (RUN_IDENTIFIER % 10)
+    indent_size = 22
     indent_str = " " * (indent_size - (min(indent_size, len(feed.username))))
 
-    feed_title = f'TG | {feed.username}{indent_str}| {feed.api_object.channel_name}'
+    feed_title = f'TG {RUN_IDENTIFIER} | {feed.username}{indent_str}| {feed.api_object.channel_name}'
     feed_desc = feed.api_object.channel_desc
 
     fg = FeedGenerator()
