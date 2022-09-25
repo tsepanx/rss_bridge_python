@@ -1,6 +1,7 @@
 import datetime
 import enum
 import os
+import random
 from datetime import date, datetime, timezone, timedelta
 
 import requests
@@ -12,6 +13,8 @@ TG_BASE_URL = 'https://t.me'
 
 TG_RSS_USE_HTML = True
 TG_COMBINE_HTML_WITH_PREVIEW = True
+
+RUN_IDENTIFIER = random.randint(1, 1000)
 
 last_n_weeks = lambda n: date.today() - n * timedelta(days=7)
 

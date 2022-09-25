@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Optional, List, Sequence
 from feedgen.feed import FeedGenerator
 
-from utils import shortened_text, logged_get, TG_BASE_URL, RssFormat, TG_COMBINE_HTML_WITH_PREVIEW, TG_RSS_USE_HTML
+from utils import shortened_text, logged_get, TG_BASE_URL, RssFormat, TG_COMBINE_HTML_WITH_PREVIEW, TG_RSS_USE_HTML, RUN_IDENTIFIER
 from base import ContentItem, ApiClass, Feed
 
 
@@ -200,7 +200,11 @@ def tg_gen_rss(
 ):
 
     feed_url = feed.url
-    feed_title = f'TG | {feed.username}{" " * (25 - (min(25, len(feed.username))))} | {feed.api_object.channel_name}'
+
+    indent_size = 25 + (RUN_IDENTIFIER % 10)
+    indent_str = " " * (indent_size - (min(indent_size, len(feed.username))))
+
+    feed_title = f'TG | {feed.username}{indent_str}| {feed.api_object.channel_name}'
     feed_desc = feed.api_object.channel_desc
 
     fg = FeedGenerator()
