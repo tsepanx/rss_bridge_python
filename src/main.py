@@ -5,6 +5,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 
+from src.yt_api import YTFeed
 from tg_api import TGFeed, tg_gen_rss
 from utils import RssFormat
 
@@ -19,7 +20,7 @@ async def get_feed(
         days: Optional[int] = None,
         with_enclosures: Optional[bool] = False
 ):
-    tg_feed = TGFeed(channel_username=username)
+    tg_feed = TGFeed(username)
 
     if days:
         after_date = datetime.date.today() - datetime.timedelta(1) * days
