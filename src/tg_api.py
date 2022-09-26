@@ -2,6 +2,7 @@ import datetime
 import os
 import re
 import bs4
+import magic
 from dataclasses import dataclass
 from typing import Optional, List, Sequence
 from feedgen.feed import FeedGenerator
@@ -64,6 +65,7 @@ class TGApiChannel(ApiClass):
 
     # --- Iterator related funcs ---
     # @lru_cache
+    # @limit_requests(count=1)  # TODO Limit fetch count if no attr applied
     def fetch_next_posts_page(self, fetch_url: str):  # -> Optional[str]:
         """
         :param fetch_url: Link to fetch_all previous channel posts.
@@ -181,14 +183,10 @@ class TGFeed(Feed):
     api_class = TGApiChannel
     username: str
 
-    def __init__(self,
-                 channel_username: str = None,
-                 channel_url: str = None
-                 ):
-        if channel_url:
-            channel_username = re.search('[^/]+(?=/$|$)', channel_url).group()
+    def __init__(self, s: str):
+        channel_username = re.search('[^/]+(?=/$|$)', s).group()
 
-        self.username = channel_username
+        self.username = channel_username or s
         super().__init__(f'https://t.me/s/{channel_username}')
 
 
@@ -230,16 +228,22 @@ def tg_gen_rss(
         fe = fg.add_entry()
         fe.id(i.url)
         fe.title(shortened_text(i.text, 50))
+        fe.published(i.pub_date)
         fe.content(content, type=content_type)
         fe.link(href=link)
+
         if use_enclosures and i.preview_img_url:
+            media_bytes = logged_get(i.preview_img_url).content
+
+            enclosure_type = magic.from_buffer(media_bytes, mime=True)
+            enclosure_len = len(media_bytes)
+
             fe.link(
                 href=i.preview_img_url,
                 rel='enclosure',
-                type=f"{i.preview_img_url[i.preview_img_url.rfind('.') + 1:]}",
-                length=str(len(logged_get(i.preview_img_url).content))
+                type=enclosure_type,
+                length=str(enclosure_len)
             )
-        fe.published(i.pub_date)
 
     dirname = f'feeds'
     if not os.path.exists(dirname):

@@ -6,3 +6,4 @@ feedgen
 fastapi
 uvicorn[standard]
 pydantic
+python-magic
