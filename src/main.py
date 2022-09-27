@@ -5,9 +5,9 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 
-from src.yt_api import YTFeed
-from tg_api import TGFeed, tg_gen_rss
-from utils import RssFormat
+
+from src.tg_api import TGFeed, tg_gen_rss
+from src.utils import RssFormat
 
 app = FastAPI()
 
@@ -29,7 +29,7 @@ async def get_feed(
 
     path = tg_gen_rss(
         feed=tg_feed,
-        items=tg_feed.fetch_all(
+        items=tg_feed.fetch(
             entries_count=count,
             after_date=after_date
         ),
@@ -37,7 +37,7 @@ async def get_feed(
         use_enclosures=with_enclosures,
     )
 
-    print(f'Result path: {path}')
+    print(f'Generated RSS file: {path}')
 
     return FileResponse(
         path=path,
@@ -45,14 +45,6 @@ async def get_feed(
     )
 
 if __name__ == "__main__":
-    # feed = TGFeed('black_triangle_tg')
-    # tg_gen_rss(
-    #     feed,
-    #     feed.fetch_all(),
-    #     rss_format=RssFormat.Rss,
-    #     use_enclosures=True
-    # )
-
     uvicorn.run(
         app=app,
         host="0.0.0.0",

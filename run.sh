@@ -1,24 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
-# Restart 'python main.py' every time remote repo updated
-
-sudo echo 1
-
-restart_process() {
-    echo 'LOG | Restarting process'
-    sudo kill $FOO_PID || true
-    python ./src/main.py &
-    FOO_PID=$!
-    echo 'LOG | Started process'
-}
-
-
-restart_process
-while true; do
-    echo 'LOG | Git pull'
-    if [[ $(git pull) != 'Already up to date.' ]]; then
-        restart_process
-    else
-        sleep 5
-    fi
-done
+source .venv/bin/activate
+PYTHONPATH="./" python src/main.py

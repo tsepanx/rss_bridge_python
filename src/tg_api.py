@@ -7,103 +7,22 @@ from dataclasses import dataclass
 from typing import Optional, List, Sequence
 from feedgen.feed import FeedGenerator
 
-from utils import shortened_text, logged_get, TG_BASE_URL, RssFormat, TG_COMBINE_HTML_WITH_PREVIEW, TG_RSS_USE_HTML, RUN_IDENTIFIER
-from base import ContentItem, ApiClass, Feed
+from .utils import shortened_text, logged_get, TG_BASE_URL, RssFormat, \
+    TG_COMBINE_HTML_WITH_PREVIEW, TG_RSS_USE_HTML, RUN_IDENTIFIER
+from .base import ItemDataclass, ApiChannel, Feed, ItemDataclassType
 
 
 @dataclass
-class TGPostDataclass(ContentItem):
+class TGPostDataclass(ItemDataclass):
     preview_link_url: Optional[str] = None
 
-    def __repr__(self):
-        return f'{self.url} | {shortened_text(self.text, 50)} | {self.pub_date} | {self.preview_link_url}'
-
-
-class TGApiChannel(ApiClass):
-    """
-    Basic api related class representing single telegram channel
-    iter(TGApiChannel) iterates over its channel messages (posts) ordered by pub date
-    """
-    SUPPORT_FILTER_BY_DATE = False
-    q: List[bs4.element.Tag] = list()
-    next_url: Optional[str] = None
-
-    def __init__(self, url: str):
-        print(f'init with {url}')
-        self.next_url = url
-
-        super().__init__(
-            url=url
-        )
-
-    def fetch_channel_metadata(self):
-        req = logged_get(self.url)
-        soup = bs4.BeautifulSoup(req.text, "html.parser")
-
-        # --- Parse channel title ---
-        channel_metadata_wrapper = soup.find(
-            name='div', attrs={
-                'class': 'tgme_channel_info_header'},
-            recursive=True
-        )
-
-        channel_title = channel_metadata_wrapper.findChild(name='span').contents[0]
-
-        channel_img_url = channel_metadata_wrapper.findChild(name='img', recursive=True)
-        channel_img_url = channel_img_url.get('src')
-
-        channel_desc = soup.findChild(
-            name='div', attrs={
-                'class': 'tgme_channel_info_description'
-            },
-            recursive=True
-        ).contents[0]
-
-        self.channel_name = str(channel_title)
-        self.channel_img_url = channel_img_url
-        self.channel_desc = str(channel_desc)
-
-    # --- Iterator related funcs ---
-    # @lru_cache
-    # @limit_requests(count=1)  # TODO Limit fetch count if no attr applied
-    def fetch_next_posts_page(self, fetch_url: str):  # -> Optional[str]:
+    @classmethod
+    def from_raw_data(cls, data: bs4.element.Tag) -> Optional['TGPostDataclass']:
         """
-        :param fetch_url: Link to fetch_all previous channel posts.
-        example: https://t.me/s/notboring_tech?before=2422
-
-        :return: Next fetch_url for fetching next page of posts
+        :param data: bs4 Tag element that is wrapper of single TG channel message
         """
-        req = logged_get(fetch_url)
-        soup = bs4.BeautifulSoup(req.text, "html.parser")
+        post = data
 
-        # --- Get list of posts wrappers
-        posts_list = soup.findChildren(
-            name='div', attrs={'class': 'tgme_widget_message_wrap'},
-            recursive=True
-        )
-
-        self.q.extend(reversed(posts_list))  # TODO convert to dataclass on the fly
-
-        # --- Next messages page href parsing
-        messages_more_tag = soup.find(
-            name='a', attrs={'class': 'tme_messages_more'},
-            recursive=True
-        )
-
-        if not messages_more_tag:
-            print('Retrying fetch...')
-            self.fetch_next_posts_page(fetch_url)  # Try to fetch again
-
-        if messages_more_tag.get('data-after'):  # We reached end of posts list
-            self.next_url = None
-        else:
-            next_page_href = messages_more_tag.get('href')
-            next_page_link = f'{TG_BASE_URL}{next_page_href}'
-
-            self.next_url = next_page_link
-
-    @staticmethod
-    def html_tag_to_dataclass(post: bs4.element.Tag) -> Optional[TGPostDataclass]:
         href_date_tag = post.findChild(name='a', attrs={'class': 'tgme_widget_message_date'})
         datetime_str = href_date_tag.contents[0].get('datetime')
         post_date = datetime.datetime.fromisoformat(datetime_str)  # Convert from string to pythonic format
@@ -143,24 +62,113 @@ class TGApiChannel(ApiClass):
             link_preview_title = None
             link_preview_desc = None
 
-        return TGPostDataclass(
+        title = shortened_text(text, 50)
+
+        return cls(
             pub_date=post_date,
             url=post_href,
-            text=text,
+            title=title,
+            text_content=text,
             html_content=html_content,
             preview_link_url=link_preview_url,
             preview_img_url=link_preview_img,
         )
 
-    def __next__(self) -> TGPostDataclass:
+    def __repr__(self):
+        return f'{self.url} | {self.title} | {self.pub_date} | {self.preview_link_url}'
+
+
+class TGApiChannel(ApiChannel):
+    """
+    Basic api related class representing single telegram channel
+    iter(TGApiChannel) iterates over its channel messages (posts) ordered by pub date
+    """
+    ItemDataclassClass: ItemDataclassType = TGPostDataclass
+
+    SUPPORT_FILTER_BY_DATE = False
+    q: List[bs4.element.Tag] = list()
+    next_url: Optional[str] = None
+
+    def __init__(self, url: str):
+        self.next_url = url
+
+        super().__init__(
+            url=url
+        )
+
+    def fetch_metadata(self):
+        print('METADATA | ', end='')
+        req = logged_get(self.url)
+        soup = bs4.BeautifulSoup(req.text, "html.parser")
+
+        # --- Parse channel title ---
+        channel_metadata_wrapper = soup.find(
+            name='div', attrs={
+                'class': 'tgme_channel_info_header'},
+            recursive=True
+        )
+
+        channel_title = channel_metadata_wrapper.findChild(name='span').contents[0]
+
+        channel_img_url = channel_metadata_wrapper.findChild(name='img', recursive=True)
+        channel_img_url = channel_img_url.get('src')
+
+        channel_desc = soup.findChild(
+            name='div', attrs={
+                'class': 'tgme_channel_info_description'
+            },
+            recursive=True
+        ).contents[0]
+
+        self.channel_name = str(channel_title)
+        self.channel_img_url = channel_img_url
+        self.channel_desc = str(channel_desc)
+
+    # --- Iterator related funcs ---
+    # @lru_cache
+    # @limit_requests(count=1)  # TODO Limit fetch count if no attr applied
+    def fetch_next_posts_page(self, fetch_url: str):  # -> Optional[str]:
+        """
+        :param fetch_url: Link to fetch previous channel posts.
+        example: https://t.me/s/notboring_tech?before=2422
+
+        :return: Next fetch_url for fetching next page of posts
+        """
+        req = logged_get(fetch_url)
+        soup = bs4.BeautifulSoup(req.text, "html.parser")
+
+        # --- Get list of posts wrappers
+        posts_list = soup.findChildren(
+            name='div', attrs={'class': 'tgme_widget_message_wrap'},
+            recursive=True
+        )
+
+        self.q.extend(reversed(posts_list))  # TODO convert to dataclass on the fly
+
+        # --- Next messages page href parsing
+        messages_more_tag = soup.find(
+            name='a', attrs={'class': 'tme_messages_more'},
+            recursive=True
+        )
+
+        if not messages_more_tag:
+            print('Retrying fetch...')
+            self.fetch_next_posts_page(fetch_url)  # Try to fetch again
+
+        if messages_more_tag.get('data-after'):  # We reached end of posts list
+            self.next_url = None
+        else:
+            next_page_href = messages_more_tag.get('href')
+            next_page_link = f'{TG_BASE_URL}{next_page_href}'
+
+            self.next_url = next_page_link
+
+    def __next__(self) -> ItemDataclassClass:
         if len(self.q) > 0:
             head_post = self.q.pop(0)
-            dataclass_item = self.html_tag_to_dataclass(head_post)
+            dataclass_item = self.ItemDataclassClass.from_raw_data(head_post)
 
-            if dataclass_item:
-                return dataclass_item
-            else:
-                return self.__next__()
+            return dataclass_item if dataclass_item else self.__next__()
         elif not self.next_url:
             raise StopIteration
         else:  # No left fetched posts in queue
@@ -170,23 +178,14 @@ class TGApiChannel(ApiClass):
             return self.__next__()
 
 
-if __name__ == "__main__":
-    gen = iter(TGApiChannel('https://t.me/s/prostyemisli'))
-
-    for i in range(101):
-        c = next(gen)
-        print(c)
-
-
 class TGFeed(Feed):
-    ContentItemClass = TGPostDataclass
-    api_class = TGApiChannel
+    ApiChannelClass = TGApiChannel
     username: str
 
-    def __init__(self, s: str):
-        channel_username = re.search('[^/]+(?=/$|$)', s).group()
+    def __init__(self, url_or_alias: str):
+        channel_username = re.search('[^/]+(?=/$|$)', url_or_alias).group()
 
-        self.username = channel_username or s
+        self.username = channel_username or url_or_alias
         super().__init__(f'https://t.me/s/{channel_username}')
 
 
@@ -202,8 +201,8 @@ def tg_gen_rss(
     indent_size = 22
     indent_str = " " * (indent_size - (min(indent_size, len(feed.username))))
 
-    feed_title = f'TG {RUN_IDENTIFIER} | {feed.username}{indent_str}| {feed.api_object.channel_name}'
-    feed_desc = feed.api_object.channel_desc
+    feed_title = f'TG {RUN_IDENTIFIER} | {feed.username}{indent_str}| {feed.channel_name}'
+    feed_desc = feed.channel_desc
 
     fg = FeedGenerator()
 
@@ -211,7 +210,7 @@ def tg_gen_rss(
     fg.title(feed_title)
     fg.author({'name': feed_title, 'uri': feed_url})
     fg.link(href=feed_url, rel='alternate')
-    fg.logo(feed.api_object.channel_img_url)
+    fg.logo(feed.channel_img_url)
     if feed_desc:
         fg.subtitle(feed_desc)
 
@@ -222,12 +221,12 @@ def tg_gen_rss(
             content = i.html_content
             content_type = 'html'
         else:
-            content = i.text
+            content = i.text_content
             content_type = None
 
         fe = fg.add_entry()
         fe.id(i.url)
-        fe.title(shortened_text(i.text, 50))
+        fe.title(i.title)
         fe.published(i.pub_date)
         fe.content(content, type=content_type)
         fe.link(href=link)
