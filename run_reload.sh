@@ -7,7 +7,10 @@ sudo echo
 restart_process() {
     echo 'LOG | Restarting process'
     sudo kill $FOO_PID || true
+
+    pip install -r requirements.txt
     /bin/bash ./run.sh &
+
     FOO_PID=$!
     echo 'LOG | Started process'
 }
