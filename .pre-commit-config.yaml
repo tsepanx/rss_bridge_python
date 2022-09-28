@@ -12,13 +12,12 @@ repos:
     rev: 22.8.0
     hooks:
     -   id: black
-# -   repo: local
-#     hooks:
-#     - id: pytest-check
-#       name: pytest-check
-#       entry: pytest
-#       language: system
-#       pass_filenames: false
-#       # files: tests/test_fetch.py
-#       verbose: true
-#       always_run: false
+-   repo: local
+    hooks:
+    - id: pytest-check
+      name: pytest-check
+      entry: pytest
+      language: system
+      pass_filenames: false
+      verbose: true
+      # always_run: false
