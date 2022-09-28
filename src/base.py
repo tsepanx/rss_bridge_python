@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime, date
 from typing import Optional, List, Type, Sequence, TypeVar, Any, Generator
 
-from .utils import to_tg_datetime, DEFAULT_MAX_ENTRIES_TO_FETCH
+from .utils import date_to_datetime, DEFAULT_MAX_ENTRIES_TO_FETCH
 
 
 @dataclass
@@ -52,7 +52,11 @@ class ApiChannel:
         """
         Base function to get new updates from given feed.
         Must be overridden by every Sub-class.
-        :return: list of fetched entries
+
+        When no params passed, set entries_count = DEFAULT_MAX_ENTRIES_TO_FETCH,
+        to limit made requests count
+
+        :returns: list of fetched entries
         """
 
         # if not (after_date or entries_count):
@@ -78,7 +82,7 @@ class ApiChannel:
                         if i >= entries_count:
                             return
                     if after_date:  # Limited by min date
-                        if c.pub_date > to_tg_datetime(after_date):
+                        if c.pub_date > date_to_datetime(after_date):
                             return
                     yield c
                     i += 1
@@ -140,7 +144,7 @@ class ApiItem:
     #                     if i >= entries_count:
     #                         return
     #                 if after_date:  # Limited by min date
-    #                     if c.pub_date > to_tg_datetime(after_date):
+    #                     if c.pub_date > date_to_datetime(after_date):
     #                         return
     #                 yield c
     #                 i += 1

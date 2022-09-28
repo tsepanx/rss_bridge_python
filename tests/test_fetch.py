@@ -1,8 +1,9 @@
 import datetime
+
 import feedparser
 
 from src.tg_api import TGApiChannel, tg_gen_rss
-from src.utils import RssFormat, struct_time_to_datetime
+from src.utils import DEFAULT_MAX_ENTRIES_TO_FETCH, DEFAULT_TZ, RssFormat, struct_time_to_datetime
 from src.yt_api import YTApiChannel
 import pytest
 
@@ -15,11 +16,16 @@ import pytest
     # True,
     False
 ])
+@pytest.mark.dependency()
 def test_tg_channel_fetch(alias, with_enclosures):
     tg_channel = TGApiChannel(alias)
     posts_list = tg_channel.fetch_items()
 
-    assert len(posts_list) > 0
+    assert len(posts_list) == DEFAULT_MAX_ENTRIES_TO_FETCH
+
+    prev_item_pub_date = datetime.datetime.max.replace(tzinfo=DEFAULT_TZ)
+    for p in posts_list:
+        assert p.pub_date < prev_item_pub_date
 
     path = tg_gen_rss(
         tg_channel,
@@ -46,7 +52,7 @@ def test_tg_channel_fetch(alias, with_enclosures):
     "https://youtube.com/channel/UCVls1GmFKf6WlTraIb_IaJg"
 ])
 @pytest.mark.parametrize('published_after', [
-    datetime.datetime(2022, 9, 15)
+    datetime.datetime(2022, 9, 15, tzinfo=DEFAULT_TZ)
 ])
 def test_yt_channel_fetch(channel_url, published_after):
     yt_channel = YTApiChannel(channel_url)

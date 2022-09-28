@@ -3,8 +3,8 @@ import re
 from typing import List, Type, Optional
 
 from .utils import shortened_text, logged_get, YT_API_KEY, YT_BASE_API_SEARCH_URL, \
-    YT_API_MAX_RESULTS_PER_PAGE, yt_id_to_url, YT_BASE_API_VIDEOS_URL, to_yt_datetime_param, \
-    from_yt_datetime_to_date, yt_channel_id_to_url
+    YT_API_MAX_RESULTS_PER_PAGE, yt_id_to_url, YT_BASE_API_VIDEOS_URL, yt_datetime_to_str_param, \
+    yt_str_param_to_datetime, yt_channel_id_to_url
 from .base import ItemDataclass, ApiChannel, ApiItem, ItemDataclassType
 
 
@@ -16,7 +16,7 @@ class YTVideoDataclass(ItemDataclass):
         url = f'https://www.youtube.com/watch?v={video_id}'
 
         date_str = json['snippet']['publishedAt']
-        pub_date = from_yt_datetime_to_date(date_str)
+        pub_date = yt_str_param_to_datetime(date_str)
 
         title = json['snippet']['title']
         description = json['snippet']['description']
@@ -92,7 +92,7 @@ class YTApiChannel(ApiChannel):
 
         if self._published_after_param and self.SUPPORT_FILTER_BY_DATE:
             _params.update({
-                    ApiFieldsEnum.PUBLISHED_AFTER: to_yt_datetime_param(self._published_after_param)
+                    ApiFieldsEnum.PUBLISHED_AFTER: yt_datetime_to_str_param(self._published_after_param)
                 })
 
         req = logged_get(YT_BASE_API_SEARCH_URL, _params)

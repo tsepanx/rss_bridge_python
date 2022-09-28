@@ -4,6 +4,7 @@ import os
 import random
 import time
 
+import pytz as pytz
 import requests
 import logging
 
@@ -15,8 +16,10 @@ import logging
 # logging.getLogger(__name__).debug('Logging configured')
 # logging.getLogger('uvicorn.error').propagate = False
 
-tg_logger = logging.Logger('TG')
-yt_logger = logging.Logger('YT')
+# tg_logger = logging.Logger('TG')
+# yt_logger = logging.Logger('YT')
+
+DEFAULT_TZ = pytz.UTC
 
 YT_API_KEY = open(os.path.dirname(__file__) + '/../.YT_API_KEY').readline()
 YT_API_MAX_RESULTS_PER_PAGE = 50
@@ -29,7 +32,7 @@ yt_channel_id_to_url = lambda channel_id: f'https://youtube.com/channel/{channel
 TG_BASE_URL = 'https://t.me'
 TG_RSS_USE_HTML = True
 TG_COMBINE_HTML_WITH_PREVIEW = True
-DEFAULT_MAX_ENTRIES_TO_FETCH = 19
+DEFAULT_MAX_ENTRIES_TO_FETCH = 15
 
 RUN_IDENTIFIER = random.randint(1, 1000)
 
@@ -58,22 +61,23 @@ def logged_get(url, *args, **kwargs):
     print(f'[{req.status_code}] {req.url}')
     return req
 
-def to_tg_datetime(d: datetime.date) -> datetime:
+def date_to_datetime(d: datetime.date) -> datetime:
     return datetime.datetime.combine(
         d,
         datetime.datetime.min.time(),
-        datetime.timezone.utc
+        DEFAULT_TZ
     )
 
 def struct_time_to_datetime(struct: time.struct_time) -> datetime.datetime:
     return datetime.datetime(*struct[:6])
 
-def to_yt_datetime_param(d: datetime.date) -> str:
+def yt_datetime_to_str_param(d: datetime.date) -> str:
     return datetime.datetime.combine(
         d,
-        datetime.datetime.min.time()
-    ).isoformat() + 'Z'
+        datetime.datetime.min.time(),
+        DEFAULT_TZ
+    ).isoformat().replace('+00:00', 'Z')
 
-def from_yt_datetime_to_date(s: str) -> datetime:
-    s = s[:-1]  # <- Removing last 'Z' character that leads to errors
+def yt_str_param_to_datetime(s: str) -> datetime:
+    s = s.replace('Z', '+00:00')
     return datetime.datetime.fromisoformat(s)

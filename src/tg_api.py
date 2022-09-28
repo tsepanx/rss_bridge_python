@@ -8,7 +8,7 @@ from typing import Optional, List, Sequence
 from feedgen.feed import FeedGenerator
 
 from .utils import shortened_text, logged_get, TG_BASE_URL, RssFormat, \
-    TG_COMBINE_HTML_WITH_PREVIEW, TG_RSS_USE_HTML, RUN_IDENTIFIER
+    TG_COMBINE_HTML_WITH_PREVIEW, TG_RSS_USE_HTML, RUN_IDENTIFIER, DEFAULT_TZ
 from .base import ItemDataclass, ApiChannel, ItemDataclassType
 
 
@@ -25,7 +25,9 @@ class TGPostDataclass(ItemDataclass):
 
         href_date_tag = post.findChild(name='a', attrs={'class': 'tgme_widget_message_date'})
         datetime_str = href_date_tag.contents[0].get('datetime')
-        post_date = datetime.datetime.fromisoformat(datetime_str)  # Convert from string to pythonic format
+        post_date = datetime.datetime.fromisoformat(
+            datetime_str
+        ).replace(tzinfo=DEFAULT_TZ)  # Convert from string to pythonic format
 
         post_href = href_date_tag.get('href')
 
@@ -99,7 +101,7 @@ class TGApiChannel(ApiChannel):
         super().__init__(url=url)
 
     def fetch_metadata(self):
-        print('METADATA | ', end='')
+        print('\nMETADATA | ', end='')
         req = logged_get(self.url)
         soup = bs4.BeautifulSoup(req.text, "html.parser")
 
