@@ -23,6 +23,8 @@ jobs:
       - name: Install python deps
         run: if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Pytest
+        env:
+          YT_API_KEY: ${{ secrets.YT_API_KEY }}
         run: pytest -v
       - name: Isort
         run: isort . --profile="black" --check-only
