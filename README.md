@@ -1,4 +1,6 @@
 
+[![python](https://github.com/tsepanx/rss-bridge-python/actions/workflows/main.yaml/badge.svg)](https://github.com/tsepanx/rss-bridge-python/actions/workflows/main.yaml)
+
 # RSS Bridge (~~Feed aggregator~~)
 
 ### Design
