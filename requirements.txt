@@ -6,8 +6,8 @@ feedgen
 fastapi
 uvicorn[standard]
 pydantic
-python - magic
+python-magic
 pytest
-pytest - dependency
-pre - commit
+pytest-dependency
+pre-commit
 black
