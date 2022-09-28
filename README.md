@@ -22,7 +22,7 @@ but filter by count and start date, or even fetch_items all available entries.
   - Gemini - Requires additional non-http parsing
 
 ### TODO & Features to implement
-- [ ] Write tests
+- [x] Write tests
 - [ ] Limit entries count by made requests
 - [ ] Param for feed: whitelist/blacklist of keywords in title/text
 - [ ] DB support, to cache existing `rss` files
