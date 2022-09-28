@@ -6,7 +6,7 @@ sudo echo
 
 restart_process() {
     echo 'LOG | Restarting process'
-    sudo kill -9 "$FOO_PID" 2>/dev/null
+    sudo kill -9 "$FOO_PID" "$(pgrep -P $FOO_PID)" 2>/dev/null
 
     pip install -r requirements.txt
     /bin/bash ./run.sh &
