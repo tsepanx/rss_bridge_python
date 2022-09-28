@@ -5,8 +5,8 @@
 ### Design
 For now, this project pretends to be an alternative of [rss-bridge](https://github.com/RSS-Bridge/rss-bridge),
 customized for my specific needs.\
-One of the main additional feature is possibility to fetch_items not just 20 last entries,
-but filter by count and start date, or even fetch_items all available entries.
+One of the main additional feature is possibility to fetch not just 20 last entries,
+but filter by count and start date, or even fetch all available entries.
 
 [//]: # (May be integrated with my other projects in the future.)
 
