@@ -20,7 +20,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
-      - name: Install python deps
+      - name: Pip install deps
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
@@ -29,6 +29,6 @@ jobs:
           YT_API_KEY: ${{ secrets.YT_API_KEY }}
         run: pytest -v
       - name: Isort
-        run: isort . --profile="black" --check-only
+        run: isort . --check-only
       - name: Black
         run: black . --check
