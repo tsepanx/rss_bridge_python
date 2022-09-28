@@ -12,3 +12,4 @@ pytest-dependency
 pre-commit
 black
 pytz
+isort
