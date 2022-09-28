@@ -5,7 +5,6 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 
-
 from src.tg_api import TGApiChannel, tg_gen_rss
 from src.utils import RssFormat
 

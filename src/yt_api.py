@@ -1,11 +1,13 @@
 import dataclasses
 import re
-from typing import List, Type, Optional
+from typing import List, Optional, Type
 
-from .utils import shortened_text, logged_get, YT_API_KEY, YT_BASE_API_SEARCH_URL, \
-    YT_API_MAX_RESULTS_PER_PAGE, yt_id_to_url, YT_BASE_API_VIDEOS_URL, yt_datetime_to_str_param, \
-    yt_str_param_to_datetime, yt_channel_id_to_url
-from .base import ItemDataclass, ApiChannel, ApiItem, ItemDataclassType
+from .base import ApiChannel, ApiItem, ItemDataclass, ItemDataclassType
+from .utils import (YT_API_KEY, YT_API_MAX_RESULTS_PER_PAGE,
+                    YT_BASE_API_SEARCH_URL, YT_BASE_API_VIDEOS_URL, logged_get,
+                    shortened_text, yt_channel_id_to_url,
+                    yt_datetime_to_str_param, yt_id_to_url,
+                    yt_str_param_to_datetime)
 
 
 @dataclasses.dataclass

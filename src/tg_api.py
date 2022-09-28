@@ -1,15 +1,17 @@
 import datetime
 import os
 import re
+from dataclasses import dataclass
+from typing import List, Optional, Sequence
+
 import bs4
 import magic
-from dataclasses import dataclass
-from typing import Optional, List, Sequence
 from feedgen.feed import FeedGenerator
 
-from .utils import shortened_text, logged_get, TG_BASE_URL, RssFormat, \
-    TG_COMBINE_HTML_WITH_PREVIEW, TG_RSS_USE_HTML, RUN_IDENTIFIER, DEFAULT_TZ
-from .base import ItemDataclass, ApiChannel, ItemDataclassType
+from .base import ApiChannel, ItemDataclass, ItemDataclassType
+from .utils import (DEFAULT_TZ, RUN_IDENTIFIER, TG_BASE_URL,
+                    TG_COMBINE_HTML_WITH_PREVIEW, TG_RSS_USE_HTML, RssFormat,
+                    logged_get, shortened_text)
 
 
 @dataclass

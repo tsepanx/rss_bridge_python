@@ -1,8 +1,8 @@
 from dataclasses import dataclass
-from datetime import datetime, date
-from typing import Optional, List, Type, Sequence, TypeVar, Any, Generator
+from datetime import date, datetime
+from typing import Any, Generator, List, Optional, Sequence, Type, TypeVar
 
-from .utils import date_to_datetime, DEFAULT_MAX_ENTRIES_TO_FETCH
+from .utils import DEFAULT_MAX_ENTRIES_TO_FETCH, date_to_datetime
 
 
 @dataclass

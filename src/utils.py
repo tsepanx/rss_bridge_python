@@ -1,13 +1,12 @@
 import datetime
 import enum
+import logging
 import os
 import random
 import time
 
 import pytz as pytz
 import requests
-import logging
-
 
 # logging.basicConfig(
 #     level=logging.INFO,

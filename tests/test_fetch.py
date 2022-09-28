@@ -1,11 +1,13 @@
 import datetime
 
 import feedparser
+import pytest
 
 from src.tg_api import TGApiChannel, tg_gen_rss
-from src.utils import DEFAULT_MAX_ENTRIES_TO_FETCH, DEFAULT_TZ, RssFormat, struct_time_to_datetime
+from src.utils import (DEFAULT_MAX_ENTRIES_TO_FETCH, DEFAULT_TZ, RssFormat,
+                       struct_time_to_datetime)
 from src.yt_api import YTApiChannel
-import pytest
+
 
 @pytest.mark.parametrize('alias', [
     'black_triangle_tg',
