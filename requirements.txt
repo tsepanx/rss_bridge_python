@@ -10,3 +10,4 @@ python-magic
 pytest
 pytest-dependency
 pre-commit
+black
