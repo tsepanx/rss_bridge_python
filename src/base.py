@@ -8,7 +8,7 @@ from .utils import to_tg_datetime, DEFAULT_MAX_ENTRIES_TO_FETCH
 @dataclass
 class ItemDataclass:
     """
-    Base interface defining Feed.fetch() return type
+    Base interface defining Feed.fetch_items() return type
     """
 
     # id: int  # Unique attr
@@ -20,7 +20,7 @@ class ItemDataclass:
     preview_img_url: Optional[str] = None
 
     @classmethod
-    def from_raw_data(cls, data: Any):
+    def from_raw_data(cls, _: Any) -> Optional['ItemDataclassType']:
         pass
 
 
@@ -34,23 +34,58 @@ class ApiChannel:
     q: List = list()
     url: str
 
-    channel_name: str = None
-    channel_img_url: Optional[str] = None
-    channel_desc: Optional[str] = None
+    username: str = None
+    logo_url: Optional[str] = None
+    description: Optional[str] = None
 
     def __init__(self, url: str):
         self.url = url
         self.q = list()
         self.fetch_metadata()
-        pass  # TODO Move common patterns of yt & tg
 
-    def __iter__(self):
-        return self
-
-    def __next__(self) -> 'ItemDataclassClass': pass
+    def next(self) -> 'ItemDataclassClass': pass
 
     def fetch_metadata(self):
         pass
+
+    def fetch_items(self, all=False, entries_count: int = None, after_date: date = None) -> Sequence[ItemDataclassType]:
+        """
+        Base function to get new updates from given feed.
+        Must be overridden by every Sub-class.
+        :return: list of fetched entries
+        """
+
+        # if not (after_date or entries_count):
+        #     entries_count = DEFAULT_MAX_ENTRIES_TO_FETCH
+        if not (all or entries_count or after_date):
+            entries_count = DEFAULT_MAX_ENTRIES_TO_FETCH
+
+        if after_date:
+            if self.SUPPORT_FILTER_BY_DATE:
+                self._published_after_param = after_date
+                return self.fetch_items(
+                    all=all,
+                    entries_count=entries_count,
+                    after_date=None
+                )
+
+        def inner() -> Generator:
+            try:
+                i = 0
+                while c := self.next():
+                    c: ItemDataclassType
+                    if entries_count:  # Limited by max count of entries
+                        if i >= entries_count:
+                            return
+                    if after_date:  # Limited by min date
+                        if c.pub_date > to_tg_datetime(after_date):
+                            return
+                    yield c
+                    i += 1
+            except StopIteration:
+                return
+
+        return list(inner())
 
 
 class ApiItem:
@@ -67,64 +102,64 @@ class ApiItem:
         pass
 
 
-class Feed:
-    ApiChannelClass: Type[ApiChannel]  # = ApiChannel
-    _api_object: ApiChannel = None
+# class Feed:
+#     ApiChannelClass: Type[ApiChannel]  # = ApiChannel
+#     _api_object: ApiChannel = None
+#
+#     def __init__(self, url: str):
+#         self.url = url
+#         self._api_object = self.ApiChannelClass(url)
 
-    def __init__(self, url: str):
-        self.url = url
-        self._api_object = self.ApiChannelClass(url)
+    # def fetch_items(self, all=False, entries_count: int = None, after_date: date = None) -> Sequence[ItemDataclassType]:
+    #     """
+    #     Base function to get new updates from given feed.
+    #     Must be overridden by every Sub-class.
+    #     :return: list of fetched entries
+    #     """
+    #
+    #     # if not (after_date or entries_count):
+    #     #     entries_count = DEFAULT_MAX_ENTRIES_TO_FETCH
+    #     if not (all or entries_count or after_date):
+    #         entries_count = DEFAULT_MAX_ENTRIES_TO_FETCH
+    #
+    #     if after_date:
+    #         if self.ApiChannelClass.SUPPORT_FILTER_BY_DATE:
+    #             self._api_object._published_after_param = after_date
+    #             return self.fetch_items(
+    #                 all=all,
+    #                 entries_count=entries_count,
+    #                 after_date=None
+    #             )
+    #
+    #     def inner() -> Generator:
+    #         try:
+    #             i = 0
+    #             while c := next(self._api_object):
+    #                 c: ItemDataclassType
+    #                 if entries_count:  # Limited by max count of entries
+    #                     if i >= entries_count:
+    #                         return
+    #                 if after_date:  # Limited by min date
+    #                     if c.pub_date > to_tg_datetime(after_date):
+    #                         return
+    #                 yield c
+    #                 i += 1
+    #         except StopIteration:
+    #             return
+    #
+    #     return list(inner())
 
-    def fetch(self, all=False, entries_count: int = None, after_date: date = None) -> Sequence[ItemDataclassType]:
-        """
-        Base function to get new updates from given feed.
-        Must be overridden by every Sub-class.
-        :return: list of fetched entries
-        """
-
-        # if not (after_date or entries_count):
-        #     entries_count = DEFAULT_MAX_ENTRIES_TO_FETCH
-        if not (all or entries_count or after_date):
-            entries_count = DEFAULT_MAX_ENTRIES_TO_FETCH
-
-        if after_date:
-            if self.ApiChannelClass.SUPPORT_FILTER_BY_DATE:
-                self._api_object._published_after_param = after_date
-                return self.fetch(
-                    all=all,
-                    entries_count=entries_count,
-                    after_date=None
-                )
-
-        def inner() -> Generator:
-            try:
-                i = 0
-                while c := next(self._api_object):
-                    c: ItemDataclassType
-                    if entries_count:  # Limited by max count of entries
-                        if i >= entries_count:
-                            return
-                    if after_date:  # Limited by min date
-                        if c.pub_date > to_tg_datetime(after_date):
-                            return
-                    yield c
-                    i += 1
-            except StopIteration:
-                return
-
-        return list(inner())
-
-    def __iter__(self):
-        raise Exception('Iteration not allowed. use Feed.fetch()')
-
-    @property
-    def channel_name(self):
-        return self._api_object.channel_name
-
-    @property
-    def channel_desc(self):
-        return self._api_object.channel_desc
-
-    @property
-    def channel_img_url(self):
-        return self._api_object.channel_img_url
+    # def __iter__(self):
+    #     raise Exception('Iteration not allowed. use Feed.fetch_items()')
+    #
+    # @property
+    # def channel_name(self):
+    #     return self._api_object.channel_name
+    #
+    # @property
+    # def description(self):
+    #     return self._api_object.description
+    #
+    # @property
+    # def logo_url(self):
+    #     return self._api_object.logo_url

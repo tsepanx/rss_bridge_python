@@ -9,7 +9,7 @@ from feedgen.feed import FeedGenerator
 
 from .utils import shortened_text, logged_get, TG_BASE_URL, RssFormat, \
     TG_COMBINE_HTML_WITH_PREVIEW, TG_RSS_USE_HTML, RUN_IDENTIFIER
-from .base import ItemDataclass, ApiChannel, Feed, ItemDataclassType
+from .base import ItemDataclass, ApiChannel, ItemDataclassType
 
 
 @dataclass
@@ -89,12 +89,14 @@ class TGApiChannel(ApiChannel):
     q: List[bs4.element.Tag] = list()
     next_url: Optional[str] = None
 
-    def __init__(self, url: str):
-        self.next_url = url
+    def __init__(self, url_or_alias: str):
+        channel_username = re.search('[^/]+(?=/$|$)', url_or_alias).group()
 
-        super().__init__(
-            url=url
-        )
+        self.username = channel_username or url_or_alias
+        url = f'https://t.me/s/{channel_username}'
+
+        self.next_url = url  # TODO make it common in ApiChannel
+        super().__init__(url=url)
 
     def fetch_metadata(self):
         print('METADATA | ', end='')
@@ -103,8 +105,7 @@ class TGApiChannel(ApiChannel):
 
         # --- Parse channel title ---
         channel_metadata_wrapper = soup.find(
-            name='div', attrs={
-                'class': 'tgme_channel_info_header'},
+            name='div', attrs={'class': 'tgme_channel_info_header'},
             recursive=True
         )
 
@@ -120,20 +121,21 @@ class TGApiChannel(ApiChannel):
             recursive=True
         ).contents[0]
 
-        self.channel_name = str(channel_title)
-        self.channel_img_url = channel_img_url
-        self.channel_desc = str(channel_desc)
+        self.username = str(channel_title)
+        self.logo_url = channel_img_url
+        self.description = str(channel_desc)
 
     # --- Iterator related funcs ---
     # @lru_cache
-    # @limit_requests(count=1)  # TODO Limit fetch count if no attr applied
-    def fetch_next_posts_page(self, fetch_url: str):  # -> Optional[str]:
+    # @limit_requests(count=1)  # TODO Limit fetch_items count if no attr applied
+    def on_fetch_new_chunk(self, fetch_url: str):  # -> Optional[str]:
         """
-        :param fetch_url: Link to fetch previous channel posts.
+        :param fetch_url: Link to previous channel posts.
         example: https://t.me/s/notboring_tech?before=2422
 
         :return: Next fetch_url for fetching next page of posts
         """
+        print(f'TG: NEW CHUNK | ', end='')
         req = logged_get(fetch_url)
         soup = bs4.BeautifulSoup(req.text, "html.parser")
 
@@ -152,8 +154,8 @@ class TGApiChannel(ApiChannel):
         )
 
         if not messages_more_tag:
-            print('Retrying fetch...')
-            self.fetch_next_posts_page(fetch_url)  # Try to fetch again
+            print('Retrying fetch_items...')
+            self.on_fetch_new_chunk(fetch_url)  # Try to fetch_items again
 
         if messages_more_tag.get('data-after'):  # We reached end of posts list
             self.next_url = None
@@ -163,46 +165,33 @@ class TGApiChannel(ApiChannel):
 
             self.next_url = next_page_link
 
-    def __next__(self) -> ItemDataclassClass:
+    def next(self) -> ItemDataclassClass:  # TODO Maybe change this method
         if len(self.q) > 0:
             head_post = self.q.pop(0)
             dataclass_item = self.ItemDataclassClass.from_raw_data(head_post)
 
-            return dataclass_item if dataclass_item else self.__next__()
+            return dataclass_item if dataclass_item else self.next()
         elif not self.next_url:
             raise StopIteration
         else:  # No left fetched posts in queue
-            print(f'Fetching new posts page')
-            self.fetch_next_posts_page(self.next_url)
-
-            return self.__next__()
-
-
-class TGFeed(Feed):
-    ApiChannelClass = TGApiChannel
-    username: str
-
-    def __init__(self, url_or_alias: str):
-        channel_username = re.search('[^/]+(?=/$|$)', url_or_alias).group()
-
-        self.username = channel_username or url_or_alias
-        super().__init__(f'https://t.me/s/{channel_username}')
+            self.on_fetch_new_chunk(self.next_url)
+            return self.next()
 
 
 def tg_gen_rss(
-        feed: TGFeed,
+        channel: TGApiChannel,
         items: Sequence[TGPostDataclass],
         rss_format: RssFormat = RssFormat.Atom,
         use_enclosures: bool = False
 ):
 
-    feed_url = feed.url
+    feed_url = channel.url
 
     indent_size = 22
-    indent_str = " " * (indent_size - (min(indent_size, len(feed.username))))
+    indent_str = " " * (indent_size - (min(indent_size, len(channel.username))))
 
-    feed_title = f'TG {RUN_IDENTIFIER} | {feed.username}{indent_str}| {feed.channel_name}'
-    feed_desc = feed.channel_desc
+    feed_title = f'TG {RUN_IDENTIFIER} | {channel.username}{indent_str}| {channel.username}'
+    feed_desc = channel.description
 
     fg = FeedGenerator()
 
@@ -210,7 +199,7 @@ def tg_gen_rss(
     fg.title(feed_title)
     fg.author({'name': feed_title, 'uri': feed_url})
     fg.link(href=feed_url, rel='alternate')
-    fg.logo(feed.channel_img_url)
+    fg.logo(channel.logo_url)
     if feed_desc:
         fg.subtitle(feed_desc)
 
@@ -248,7 +237,7 @@ def tg_gen_rss(
     if not os.path.exists(dirname):
         os.mkdir(dirname)
 
-    dirname = os.path.join(dirname, feed.username)
+    dirname = os.path.join(dirname, channel.username)
     if not os.path.exists(dirname):
         os.mkdir(dirname)
 

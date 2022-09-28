@@ -35,6 +35,9 @@ RUN_IDENTIFIER = random.randint(1, 1000)
 
 last_n_weeks = lambda n: datetime.date.today() - n * datetime.timedelta(days=7)
 
+class RssFormat(str, enum.Enum):
+    Atom = 'atom'
+    Rss = 'rss'
 
 def as_list(func):
     def wrapper(*args, **kwargs):
@@ -42,7 +45,6 @@ def as_list(func):
         return res
 
     return wrapper
-
 
 def shortened_text(s: str, max_chars=20) -> str:
     return s[:min(len(s), max_chars)] \
@@ -56,7 +58,6 @@ def logged_get(url, *args, **kwargs):
     print(f'[{req.status_code}] {req.url}')
     return req
 
-
 def to_tg_datetime(d: datetime.date) -> datetime:
     return datetime.datetime.combine(
         d,
@@ -67,7 +68,12 @@ def to_tg_datetime(d: datetime.date) -> datetime:
 def struct_time_to_datetime(struct: time.struct_time) -> datetime.datetime:
     return datetime.datetime(*struct[:6])
 
-class RssFormat(str, enum.Enum):
-    Atom = 'atom'
-    Rss = 'rss'
+def to_yt_datetime_param(d: datetime.date) -> str:
+    return datetime.datetime.combine(
+        d,
+        datetime.datetime.min.time()
+    ).isoformat() + 'Z'
 
+def from_yt_datetime_to_date(s: str) -> datetime:
+    s = s[:-1]  # <- Removing last 'Z' character that leads to errors
+    return datetime.datetime.fromisoformat(s)

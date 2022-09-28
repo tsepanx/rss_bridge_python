@@ -1,28 +1,17 @@
 import dataclasses
-from datetime import datetime, date
 import re
-from typing import List, Type
+from typing import List, Type, Optional
 
 from .utils import shortened_text, logged_get, YT_API_KEY, YT_BASE_API_SEARCH_URL, \
-    YT_API_MAX_RESULTS_PER_PAGE, yt_id_to_url, YT_BASE_API_VIDEOS_URL, yt_channel_id_to_url
-from .base import ItemDataclass, ApiChannel, Feed, ApiItem, ItemDataclassType
-
-
-def to_yt_datetime_param(d: date) -> str:
-    return datetime.combine(
-        d,
-        datetime.min.time()
-    ).isoformat() + 'Z'
-
-def from_yt_datetime_to_date(s: str) -> datetime:
-    s = s[:-1]  # <- Removing last 'Z' character that leads to errors
-    return datetime.fromisoformat(s)
+    YT_API_MAX_RESULTS_PER_PAGE, yt_id_to_url, YT_BASE_API_VIDEOS_URL, to_yt_datetime_param, \
+    from_yt_datetime_to_date, yt_channel_id_to_url
+from .base import ItemDataclass, ApiChannel, ApiItem, ItemDataclassType
 
 
 @dataclasses.dataclass
 class YTVideoDataclass(ItemDataclass):
-    @staticmethod
-    def from_raw_data(json: dict) -> 'YTVideoDataclass':
+    @classmethod
+    def from_raw_data(cls, json: dict) -> Optional['YTVideoDataclass']:
         video_id = json["id"]["videoId"]
         url = f'https://www.youtube.com/watch?v={video_id}'
 
@@ -33,7 +22,7 @@ class YTVideoDataclass(ItemDataclass):
         description = json['snippet']['description']
         preview_img_url = json['snippet']['thumbnails']['medium']['url']
 
-        return YTVideoDataclass(
+        return cls(
             url=url,
             pub_date=pub_date,
             title=title,
@@ -56,10 +45,28 @@ class YTApiChannel(ApiChannel):
     q: List[dict] = list()
     next_page_token: str = ''
 
-    def __init__(self, url: str):
-        super().__init__(
-            url=url
-        )
+    def __init__(self,
+                 by_url: str = None,
+                 by_channel_id: str = None,
+                 by_channel_search_string: str = None):
+        if by_url:
+            url = by_url
+        elif by_channel_id:
+            url = yt_channel_id_to_url(by_channel_id)
+        elif by_channel_search_string:
+            req = logged_get(
+                url=YT_BASE_API_SEARCH_URL,
+                q=by_channel_search_string,
+                key=YT_API_KEY,
+                part='snippet',
+                type='channel'
+            )
+
+            channel_id = req.json()['items'][0]['id']['channelId']
+            url = yt_channel_id_to_url(channel_id)
+        else: raise Exception('You need to specify at least on param')
+
+        super().__init__(url=url)
 
     @property
     def id(self):
@@ -99,19 +106,19 @@ class YTApiChannel(ApiChannel):
         elif req.status_code == 403:  # Forbidden
             raise Exception(f'=== YT API FORBIDDEN ===')
 
-    def __next__(self) -> YTVideoDataclass:
+    def next(self) -> Optional['ItemDataclassClass']:
         if len(self.q) > 0:
             head_elem = self.q.pop(0)
             dataclass_item = self.ItemDataclassClass.from_raw_data(head_elem)
 
-            return dataclass_item if dataclass_item else self.__next__()  # TODO Move __next__to common ApiChannel
+            return dataclass_item if dataclass_item else self.next()  # TODO Move __next__to common ApiChannel
         elif self.next_page_token is None:
             self.next_page_token = ''
             self._published_after_param = None
             raise StopIteration
         else:
             self.fetch_next_page(self.next_page_token)
-            return self.__next__()
+            return self.next()
 
 class YTApiVideo(ApiItem):
     ItemDataclassClass = YTVideoDataclass
@@ -137,28 +144,3 @@ class YTApiVideo(ApiItem):
 
 class YTVideo:
     ApiItemClass: Type[ApiItem] = YTApiVideo
-
-class YTFeed(Feed):
-    ApiChannelClass = YTApiChannel
-
-    def __init__(self,
-                 by_url: str = None,
-                 by_channel_id: str = None,
-                 by_channel_search_string: str = None):
-        if by_url:
-            super().__init__(url=by_url)
-        elif by_channel_id:
-            url = yt_channel_id_to_url(by_channel_id)
-            super(YTFeed, self).__init__(url=url)
-        elif by_channel_search_string:
-            req = logged_get(
-                url=YT_BASE_API_SEARCH_URL,
-                q=by_channel_search_string,
-                key=YT_API_KEY,
-                part='snippet',
-                type='channel'
-            )
-
-            channel_id = req.json()['items'][0]['id']['channelId']
-            url = yt_channel_id_to_url(channel_id)
-            super().__init__(url=url)

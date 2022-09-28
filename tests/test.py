@@ -1,9 +1,9 @@
 import datetime
 import feedparser
 
-from src.tg_api import TGFeed, tg_gen_rss
+from src.tg_api import TGApiChannel, tg_gen_rss
 from src.utils import RssFormat, struct_time_to_datetime
-from src.yt_api import YTFeed
+from src.yt_api import YTApiChannel
 import pytest
 
 @pytest.mark.parametrize('alias', [
@@ -16,21 +16,21 @@ import pytest
     False
 ])
 def test_tg_channel_fetch(alias, with_enclosures):
-    tg_feed = TGFeed(alias)
-    tg_fetched_list = tg_feed.fetch()
+    tg_channel = TGApiChannel(alias)
+    posts_list = tg_channel.fetch_items()
 
-    assert len(tg_fetched_list) > 0
+    assert len(posts_list) > 0
 
     path = tg_gen_rss(
-        tg_feed,
-        tg_fetched_list,
+        tg_channel,
+        posts_list,
         rss_format=RssFormat.Atom,
         use_enclosures=with_enclosures
     )
     assert path.endswith('.xml')
 
     parsed = feedparser.parse(path)
-    assert len(parsed.entries) == len(tg_fetched_list)
+    assert len(parsed.entries) == len(posts_list)
 
     prev_item_pub_date = datetime.datetime.max
     for i in parsed.entries:
@@ -49,11 +49,11 @@ def test_tg_channel_fetch(alias, with_enclosures):
     datetime.datetime(2022, 9, 15)
 ])
 def test_yt_channel_fetch(channel_url, published_after):
-    feed = YTFeed(channel_url)
+    yt_channel = YTApiChannel(channel_url)
 
     # --- Filter by date ---
 
-    videos_list = feed.fetch(
+    videos_list = yt_channel.fetch_items(
         after_date=published_after
     )
 
@@ -63,5 +63,5 @@ def test_yt_channel_fetch(channel_url, published_after):
     # --- Filter by count ---
 
     n = 10
-    videos_list2 = feed.fetch(entries_count=n)
+    videos_list2 = yt_channel.fetch_items(entries_count=n)
     assert len(videos_list2) == n
