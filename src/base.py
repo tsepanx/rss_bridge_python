@@ -37,6 +37,7 @@ class ApiChannel:
     url: str
 
     username: str = None
+    full_name: str = None
     logo_url: Optional[str] = None
     description: Optional[str] = None
 

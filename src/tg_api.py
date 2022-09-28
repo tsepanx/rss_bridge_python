@@ -141,7 +141,7 @@ class TGApiChannel(ApiChannel):
             name="div", attrs={"class": "tgme_channel_info_description"}, recursive=True
         ).contents[0]
 
-        self.username = str(channel_title)
+        self.full_name = str(channel_title)
         self.logo_url = channel_img_url
         self.description = str(channel_desc)
 
