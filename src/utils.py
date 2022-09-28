@@ -20,7 +20,18 @@ import requests
 
 DEFAULT_TZ = pytz.UTC
 
-YT_API_KEY = open(os.path.dirname(__file__) + "/../.YT_API_KEY").readline()
+YT_API_KEY_PATH = os.path.join(os.path.dirname(__file__), "../.YT_API_KEY")
+if not os.path.exists(YT_API_KEY_PATH):
+    with open(YT_API_KEY_PATH, "w") as f:
+        try:
+            key = os.environ["YT_API_KEY"]
+            YT_API_KEY = key
+            f.write(key)
+        except KeyError:
+            raise Exception("No Youtube API key specified: YT_API_KEY")
+else:
+    with open(YT_API_KEY_PATH, "r") as f:
+        YT_API_KEY = f.readline()
 YT_API_MAX_RESULTS_PER_PAGE = 50
 YT_BASE_API_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search"
 YT_BASE_API_VIDEOS_URL = "https://www.googleapis.com/youtube/v3/videos"
