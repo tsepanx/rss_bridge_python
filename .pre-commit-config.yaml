@@ -16,22 +16,3 @@ repos:
     rev: 5.10.1
     hooks:
       - id: isort
-        args: ["--profile", "black"]
-# -   repo: local
-    # hooks:
-    # -   id: black
-    #     name: black
-    #     # entry: black . --exclude=".pre*"
-    #     entry: pwd
-    #     language: system
-    # -   id: isort
-    #     name: isort
-    #     entry: isort .
-    #     language: system
-    # - id: pytest-check
-    #   name: pytest-check
-    #   entry: pytest
-    #   language: system
-    #   pass_filenames: false
-    #   verbose: true
-    #   always_run: false
