@@ -209,7 +209,7 @@ def tg_gen_rss(
     indent_str = " " * (indent_size - (min(indent_size, len(channel.username))))
 
     feed_title = (
-        f"TG {RUN_IDENTIFIER} | {channel.username}{indent_str}| {channel.username}"
+        f"TG {RUN_IDENTIFIER} | {channel.username}{indent_str}| {channel.full_name}"
     )
     feed_desc = channel.description
 
