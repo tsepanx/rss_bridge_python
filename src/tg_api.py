@@ -12,6 +12,7 @@ from .base import ApiChannel, ItemDataclass, ItemDataclassType
 from .utils import (
     DEFAULT_TZ,
     RUN_IDENTIFIER,
+    SRC_PATH,
     TG_BASE_URL,
     TG_COMBINE_HTML_WITH_PREVIEW,
     TG_RSS_USE_HTML,
@@ -199,8 +200,8 @@ class TGApiChannel(ApiChannel):
 def tg_gen_rss(
     channel: TGApiChannel,
     items: Sequence[TGPostDataclass],
-    rss_format: RssFormat = RssFormat.Atom,
-    use_enclosures: bool = False,
+    rss_format: Optional[RssFormat] = RssFormat.Atom,
+    use_enclosures: Optional[bool] = False,
 ):
 
     feed_url = channel.url
@@ -253,7 +254,7 @@ def tg_gen_rss(
                 length=str(enclosure_len),
             )
 
-    dirname = f"feeds"
+    dirname = os.path.join(SRC_PATH, "feeds")
     if not os.path.exists(dirname):
         os.mkdir(dirname)
 

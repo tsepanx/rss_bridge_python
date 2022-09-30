@@ -120,7 +120,8 @@ class YTApiChannel(ApiChannel):
             self.next_page_token = json.get(ApiFieldsEnum.NEXT_PAGE_TOKEN, None)
             self.q.extend(json_items)
         elif req.status_code == 403:  # Forbidden
-            raise Exception(f"=== YT API FORBIDDEN ===")
+            msg = req.json()["error"]["message"]
+            raise Exception(f"=== YT API FORBIDDEN === | {msg}")
 
     def next(self) -> Optional["ItemDataclassClass"]:
         if len(self.q) > 0:

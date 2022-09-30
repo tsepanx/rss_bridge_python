@@ -1,26 +1,18 @@
 import datetime
 import enum
-import logging
 import os
 import random
 import time
 
-import pytz as pytz
+import pytz
 import requests
-
-# logging.basicConfig(
-#     level=logging.INFO,
-#     format="%(levelname)s:%(name)s - '%(message)s'"
-# )
-# logging.getLogger(__name__).debug('Logging configured')
-# logging.getLogger('uvicorn.error').propagate = False
-
-# tg_logger = logging.Logger('TG')
-# yt_logger = logging.Logger('YT')
 
 DEFAULT_TZ = pytz.UTC
 
-YT_API_KEY_PATH = os.path.join(os.path.dirname(__file__), "../.YT_API_KEY")
+SRC_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+
+
+YT_API_KEY_PATH = os.path.join(SRC_PATH, ".YT_API_KEY")
 if not os.path.exists(YT_API_KEY_PATH):
     with open(YT_API_KEY_PATH, "w") as f:
         try:
@@ -67,7 +59,7 @@ def shortened_text(s: str, max_chars=20) -> str:
 
 
 def logged_get(url, *args, **kwargs):
-    print(f"REQUEST: {url}", end=" -> ")
+    print(f"REQUEST -> ", end="")
     req = requests.get(url, *args, **kwargs)
     print(f"[{req.status_code}] {req.url}")
     return req
