@@ -3,7 +3,8 @@ import datetime
 import feedparser
 import pytest
 
-from src.tg_api import TGApiChannel, tg_gen_rss
+from src.rss import channel_gen_rss
+from src.tg_api import TGApiChannel
 from src.utils import (
     DEFAULT_MAX_ENTRIES_TO_FETCH,
     DEFAULT_TZ,
@@ -32,7 +33,7 @@ def test_tg_channel_fetch(alias, with_enclosures):
     for p in posts_list:
         assert p.pub_date < prev_item_pub_date
 
-    path = tg_gen_rss(
+    path = channel_gen_rss(
         tg_channel,
         posts_list,
         rss_format=RssFormat.Atom,
@@ -74,3 +75,10 @@ def test_yt_channel_fetch(channel_url, published_after):
     n = 10
     videos_list2 = yt_channel.fetch_items(entries_count=n)
     assert len(videos_list2) == n
+
+
+# if __name__ == "__main__":
+#     yt_channel = YTApiChannel(channel_url)
+#     n = 10
+#     videos_list2 = yt_channel.fetch_items(entries_count=n)
+#     assert len(videos_list2) == n

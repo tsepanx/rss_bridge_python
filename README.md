@@ -26,3 +26,6 @@ but filter by count and start date, or even fetch all available entries.
 - [ ] Param for feed: whitelist/blacklist of keywords in title/text
 - [ ] DB support, to cache existing `rss` files
   - Specify update interval (5min)
+
+### Refactor
+- [x] channel_gen_rss & yt_gen_rss

@@ -5,7 +5,8 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 
-from src.tg_api import TGApiChannel, tg_gen_rss
+from src.rss import channel_gen_rss
+from src.tg_api import TGApiChannel
 from src.utils import RssFormat
 
 app = FastAPI()
@@ -26,7 +27,7 @@ async def get_feed(
     else:
         after_date = None
 
-    path = tg_gen_rss(
+    path = channel_gen_rss(
         channel=tg_channel,
         items=tg_channel.fetch_items(entries_count=count, after_date=after_date),
         rss_format=format,

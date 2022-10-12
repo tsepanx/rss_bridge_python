@@ -89,6 +89,10 @@ class YTApiChannel(ApiChannel):
 
     # --- Iterator related funcs ---
 
+    def reset_fetch_fields(self):
+        super().reset_fetch_fields()
+        self.next_page_token = ""
+
     def fetch_next_page(self, page_token: str = None):
         _params = {
             "key": YT_API_KEY,

@@ -3,6 +3,7 @@ import enum
 import os
 import random
 import time
+from ssl import SSLError
 
 import pytz
 import requests
@@ -33,7 +34,7 @@ yt_channel_id_to_url = lambda channel_id: f"https://youtube.com/channel/{channel
 
 TG_BASE_URL = "https://t.me"
 TG_RSS_USE_HTML = True
-TG_COMBINE_HTML_WITH_PREVIEW = True
+TG_RSS_HTML_APPEND_PREVIEW = True
 DEFAULT_MAX_ENTRIES_TO_FETCH = 15
 
 RUN_IDENTIFIER = random.randint(1, 1000)
@@ -60,7 +61,11 @@ def shortened_text(s: str, max_chars=20) -> str:
 
 def logged_get(url, *args, **kwargs):
     print(f"REQUEST -> ", end="")
-    req = requests.get(url, *args, **kwargs)
+    try:
+        req = requests.get(url, *args, **kwargs)
+    except SSLError:
+        raise Exception("No connection to the internet")
+
     print(f"[{req.status_code}] {req.url}")
     return req
 

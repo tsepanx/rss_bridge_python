@@ -1,22 +1,16 @@
 import datetime
-import os
 import re
 from dataclasses import dataclass
-from typing import List, Optional, Sequence
+from typing import List, Optional
 
 import bs4
-import magic
-from feedgen.feed import FeedGenerator
 
 from .base import ApiChannel, ItemDataclass, ItemDataclassType
 from .utils import (
     DEFAULT_TZ,
-    RUN_IDENTIFIER,
-    SRC_PATH,
     TG_BASE_URL,
-    TG_COMBINE_HTML_WITH_PREVIEW,
+    TG_RSS_HTML_APPEND_PREVIEW,
     TG_RSS_USE_HTML,
-    RssFormat,
     logged_get,
     shortened_text,
 )
@@ -78,7 +72,7 @@ class TGPostDataclass(ItemDataclass):
                 attrs={"class": "link_preview_description"}
             )
 
-            if TG_COMBINE_HTML_WITH_PREVIEW:
+            if TG_RSS_HTML_APPEND_PREVIEW:
                 html_content += f"<br/>Preview content:<br/>{link_preview_title}<br/>{link_preview_desc}"
         else:
             link_preview_url = None
@@ -93,7 +87,7 @@ class TGPostDataclass(ItemDataclass):
             url=post_href,
             title=title,
             text_content=text,
-            html_content=html_content,
+            html_content=html_content if TG_RSS_USE_HTML else None,
             preview_link_url=link_preview_url,
             preview_img_url=link_preview_img,
         )
@@ -195,81 +189,3 @@ class TGApiChannel(ApiChannel):
         else:  # No left fetched posts in queue
             self.on_fetch_new_chunk(self.next_url)
             return self.next()
-
-
-def tg_gen_rss(
-    channel: TGApiChannel,
-    items: Sequence[TGPostDataclass],
-    rss_format: Optional[RssFormat] = RssFormat.Atom,
-    use_enclosures: Optional[bool] = False,
-):
-
-    feed_url = channel.url
-
-    indent_size = 22
-    indent_str = " " * (indent_size - (min(indent_size, len(channel.username))))
-
-    feed_title = (
-        f"TG {RUN_IDENTIFIER} | {channel.username}{indent_str}| {channel.full_name}"
-    )
-    feed_desc = channel.description
-
-    fg = FeedGenerator()
-
-    fg.id(feed_url)
-    fg.title(feed_title)
-    fg.author({"name": feed_title, "uri": feed_url})
-    fg.link(href=feed_url, rel="alternate")
-    fg.logo(channel.logo_url)
-    if feed_desc:
-        fg.subtitle(feed_desc)
-
-    for i in reversed(items):
-        link = i.url
-
-        if TG_RSS_USE_HTML and i.html_content:
-            content = i.html_content
-            content_type = "html"
-        else:
-            content = i.text_content
-            content_type = None
-
-        fe = fg.add_entry()
-        fe.id(i.url)
-        fe.title(i.title)
-        fe.published(i.pub_date)
-        fe.content(content, type=content_type)
-        fe.link(href=link)
-
-        if use_enclosures and i.preview_img_url:
-            media_bytes = logged_get(i.preview_img_url).content
-
-            enclosure_type = magic.from_buffer(media_bytes, mime=True)
-            enclosure_len = len(media_bytes)
-
-            fe.link(
-                href=i.preview_img_url,
-                rel="enclosure",
-                type=enclosure_type,
-                length=str(enclosure_len),
-            )
-
-    dirname = os.path.join(SRC_PATH, "feeds")
-    if not os.path.exists(dirname):
-        os.mkdir(dirname)
-
-    dirname = os.path.join(dirname, channel.username)
-    if not os.path.exists(dirname):
-        os.mkdir(dirname)
-
-    if rss_format is RssFormat.Rss:
-        path = f"{dirname}/rss.xml"
-        func = fg.rss_file
-    elif rss_format is RssFormat.Atom:
-        path = f"{dirname}/atom.xml"
-        func = fg.atom_file
-    else:
-        raise Exception("No rss_format specified")
-
-    func(path, pretty=True)
-    return path
