@@ -22,16 +22,20 @@ def test_tg_channel_fetch(alias, with_enclosures):
     tg_channel = TGApiChannel(alias)
     posts_list = tg_channel.fetch_items()
 
+    # --- Simple test right fetch_items() ---
+
     assert len(posts_list) <= 20
 
     prev_item_pub_date = datetime.datetime.max.replace(tzinfo=DEFAULT_TZ)
     for p in posts_list:
         assert p.pub_date < prev_item_pub_date
 
+    # --- RSS Generation ---
+
     path = channel_gen_rss(
         tg_channel,
         posts_list,
-        rss_format=RssFormat.Atom,
+        rss_format=RssFormat.ATOM,
         use_enclosures=with_enclosures,
     )
     assert path.endswith(".xml")

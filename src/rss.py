@@ -1,4 +1,5 @@
 import os
+from datetime import date
 from typing import Optional, Sequence
 
 import magic
@@ -12,7 +13,7 @@ from src.utils import RUN_IDENTIFIER, SRC_PATH, RssFormat, logged_get
 def channel_gen_rss(
     channel: ApiChannel,
     items: Sequence[ItemDataclass],
-    rss_format: Optional[RssFormat] = RssFormat.Atom,
+    rss_format: Optional[RssFormat] = RssFormat.ATOM,
     use_enclosures: Optional[bool] = False,
 ):
     title_indent_size = 22
@@ -75,10 +76,10 @@ def channel_gen_rss(
     if not os.path.exists(dirname):
         os.mkdir(dirname)
 
-    if rss_format is RssFormat.Rss:
+    if rss_format is RssFormat.RSS:
         path = f"{dirname}/rss.xml"
         func = fg.rss_file
-    elif rss_format is RssFormat.Atom:
+    elif rss_format is RssFormat.ATOM:
         path = f"{dirname}/atom.xml"
         func = fg.atom_file
     else:

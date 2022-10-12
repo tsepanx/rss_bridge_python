@@ -1,5 +1,6 @@
 import datetime
 import enum
+import functools
 import os
 import random
 import time
@@ -43,8 +44,30 @@ last_n_weeks = lambda n: datetime.date.today() - n * datetime.timedelta(days=7)
 
 
 class RssFormat(str, enum.Enum):
-    Atom = "atom"
-    Rss = "rss"
+    ATOM = "atom"
+    RSS = "rss"
+
+
+class RssBridgeType(str, enum.Enum):
+    TG = "tg"
+    YT = "yt"
+
+
+def get_ttl_hash(seconds=3):
+    """Return the same value withing `seconds` time period"""
+    return round(time.time() / seconds)
+
+
+def my_lru_cache(func):
+    print("In decorator!")
+    new_ttl_hash = get_ttl_hash() + random.randint(1, 100)
+
+    # @functools.wraps(func)
+    @functools.lru_cache
+    def inner(self, *args, ttl_hash=new_ttl_hash, **kwargs):
+        return func(self, *args, **kwargs)
+
+    return inner
 
 
 def as_list(func):

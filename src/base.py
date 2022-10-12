@@ -57,6 +57,7 @@ class ApiChannel:
     def fetch_metadata(self):
         pass
 
+    # @my_lru_cache
     def fetch_items(
         self, all=False, entries_count: int = None, after_date: date = None
     ) -> Sequence[ItemDataclassType]:
@@ -99,6 +100,9 @@ class ApiChannel:
         res = list(inner())
         self.reset_fetch_fields()
         return res
+
+
+ApiChannelType = TypeVar("ApiChannelType", bound=ApiChannel)
 
 
 class ApiItem:
