@@ -19,7 +19,7 @@ def channel_gen_rss(
     title_indent_string = " " * (
         title_indent_size - (min(title_indent_size, len(channel.username)))
     )
-    title_prefix = "TG" if isinstance(channel, TGApiChannel) else "YT"
+    title_prefix = "TELEGRAM" if isinstance(channel, TGApiChannel) else "YOUTUBE"
 
     feed_title = f"{title_prefix} {RUN_IDENTIFIER} | {channel.username}{title_indent_string}| {channel.full_name}"
     feed_url = channel.url

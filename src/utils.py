@@ -35,7 +35,7 @@ yt_channel_id_to_url = lambda channel_id: f"https://youtube.com/channel/{channel
 TG_BASE_URL = "https://t.me"
 TG_RSS_USE_HTML = True
 TG_RSS_HTML_APPEND_PREVIEW = True
-DEFAULT_MAX_ENTRIES_TO_FETCH = 15
+# DEFAULT_MAX_ENTRIES_TO_FETCH = 15
 
 RUN_IDENTIFIER = random.randint(1, 1000)
 

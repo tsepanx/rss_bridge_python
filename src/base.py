@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Any, Generator, List, Optional, Sequence, TypeVar
 
-from .utils import DEFAULT_MAX_ENTRIES_TO_FETCH, date_to_datetime
+from .utils import date_to_datetime
 
 
 @dataclass
@@ -34,6 +34,7 @@ class ApiChannel:
     ] = False  # If api allow fetching items with date > self._published_after_param
     _published_after_param: Optional[date] = None
     q: List = list()
+    max_requests: Optional[int] = None
     url: str
 
     username: str = None
@@ -48,6 +49,7 @@ class ApiChannel:
 
     def reset_fetch_fields(self):
         self.q = list()
+        self.max_requests = None
 
     def next(self) -> "ItemDataclassClass":
         pass
@@ -61,20 +63,20 @@ class ApiChannel:
         """
         Base function to get new updates from given feed.
 
-        When no params passed, set entries_count = DEFAULT_MAX_ENTRIES_TO_FETCH,
+        When no params passed, set max_requests = 1,
         to limit made requests count
 
         :returns: list of fetched entries
         """
 
-        if not (all or entries_count or after_date):
-            entries_count = DEFAULT_MAX_ENTRIES_TO_FETCH
-        elif after_date:
-            if self.SUPPORT_FILTER_BY_DATE:
-                self._published_after_param = after_date
-                return self.fetch_items(
-                    all=all, entries_count=entries_count, after_date=None
-                )
+        if not (all or entries_count or after_date or self._published_after_param):
+            self.max_requests = 1
+
+        if after_date and self.SUPPORT_FILTER_BY_DATE:
+            self._published_after_param = after_date
+            return self.fetch_items(
+                all=all, entries_count=entries_count, after_date=None
+            )
 
         def inner() -> Generator:
             try:

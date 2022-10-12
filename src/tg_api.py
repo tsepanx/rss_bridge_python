@@ -187,5 +187,9 @@ class TGApiChannel(ApiChannel):
         elif not self.next_url:
             raise StopIteration
         else:  # No left fetched posts in queue
-            self.on_fetch_new_chunk(self.next_url)
-            return self.next()
+            if self.max_requests is not None and self.max_requests > 0:
+                self.on_fetch_new_chunk(self.next_url)
+                self.max_requests -= 1
+                return self.next()
+            else:
+                raise StopIteration

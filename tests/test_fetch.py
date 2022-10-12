@@ -5,12 +5,7 @@ import pytest
 
 from src.rss import channel_gen_rss
 from src.tg_api import TGApiChannel
-from src.utils import (
-    DEFAULT_MAX_ENTRIES_TO_FETCH,
-    DEFAULT_TZ,
-    RssFormat,
-    struct_time_to_datetime,
-)
+from src.utils import DEFAULT_TZ, RssFormat, struct_time_to_datetime
 from src.yt_api import YTApiChannel
 
 
@@ -27,7 +22,7 @@ def test_tg_channel_fetch(alias, with_enclosures):
     tg_channel = TGApiChannel(alias)
     posts_list = tg_channel.fetch_items()
 
-    assert len(posts_list) == DEFAULT_MAX_ENTRIES_TO_FETCH
+    assert len(posts_list) <= 20
 
     prev_item_pub_date = datetime.datetime.max.replace(tzinfo=DEFAULT_TZ)
     for p in posts_list:
@@ -50,6 +45,7 @@ def test_tg_channel_fetch(alias, with_enclosures):
         assert i.id is not None
         assert i.title is not None
         assert i_published <= prev_item_pub_date  # Dates are in descending order
+        assert i.content[0].type == "text/html"
 
         prev_item_pub_date = i_published
 
@@ -75,10 +71,3 @@ def test_yt_channel_fetch(channel_url, published_after):
     n = 10
     videos_list2 = yt_channel.fetch_items(entries_count=n)
     assert len(videos_list2) == n
-
-
-# if __name__ == "__main__":
-#     yt_channel = YTApiChannel(channel_url)
-#     n = 10
-#     videos_list2 = yt_channel.fetch_items(entries_count=n)
-#     assert len(videos_list2) == n
