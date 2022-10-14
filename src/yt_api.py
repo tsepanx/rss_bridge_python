@@ -8,6 +8,8 @@ from .utils import (
     YT_API_MAX_RESULTS_PER_PAGE,
     YT_BASE_API_SEARCH_URL,
     YT_BASE_API_VIDEOS_URL,
+    is_youtube_channel_id,
+    is_youtube_link,
     logged_get,
     shortened_text,
     yt_channel_id_to_url,
@@ -55,43 +57,71 @@ class YTApiChannel(ApiChannel):
     SUPPORT_FILTER_BY_DATE = True
     q: List[dict] = list()
     next_page_token: str = ""
+    metadata_search_string = None
 
-    def __init__(
-        self,
-        by_url: str = None,
-        by_channel_id: str = None,
-        by_channel_search_string: str = None,
-    ):
-        if by_url:
-            url = by_url
-        elif by_channel_id:
-            url = yt_channel_id_to_url(by_channel_id)
-        elif by_channel_search_string:
-            req = logged_get(
-                url=YT_BASE_API_SEARCH_URL,
-                q=by_channel_search_string,
-                key=YT_API_KEY,
-                part="snippet",
-                type="channel",
-            )
+    def __init__(self, s: str):
 
-            channel_id = req.json()["items"][0]["id"]["channelId"]
-            url = yt_channel_id_to_url(channel_id)
+        if is_youtube_link(s):
+            url = s
+            self.metadata_search_string = s
+        elif is_youtube_channel_id(s):
+            url = yt_channel_id_to_url(s)
+            self.metadata_search_string = s
         else:
-            raise Exception("You need to specify at least on param")
+            url = None  # Will be fetched as metadata
+            self.metadata_search_string = s
 
         super().__init__(url=url)
 
     @property
     def id(self):
+        if not self.url:
+            return None
         r = r"(?<=channel\/)([A-z]|[0-9])+"
         return re.search(r, self.url).group()
 
-    # --- Iterator related funcs ---
+    @id.setter
+    def id(self, value):
+        self.url = "https://www.youtube.com/channel/" + value
 
+    @property
+    def username(self):
+        return self.full_name
+
+    def is_fetched_metadata(self):
+        return self.username is not None  # TODO Check for existing data from DB
+
+    def fetch_metadata(self):
+        if not self.metadata_search_string:
+            raise Exception("No string for metadata search is given")
+
+        req = logged_get(
+            url=YT_BASE_API_SEARCH_URL,
+            params={
+                "q": self.metadata_search_string,
+                "key": YT_API_KEY,
+                "part": "snippet",
+                "type": "channel",
+            },
+        )
+
+        items = req.json()["items"]
+        if len(items) == 0:
+            raise Exception(
+                f"Channel search failed for given string: {self.metadata_search_string}"
+            )
+
+        channel_json = items[0]
+
+        self.id = channel_json["id"]["channelId"]
+        self.full_name = channel_json["snippet"]["title"]
+        self.description = channel_json["snippet"]["description"]
+
+    # --- Iterator related funcs ---
     def reset_fetch_fields(self):
         super().reset_fetch_fields()
         self.next_page_token = ""
+        self._published_after_param = None
 
     def fetch_next_page(self, page_token: str = None):
         _params = {
@@ -127,20 +157,22 @@ class YTApiChannel(ApiChannel):
             msg = req.json()["error"]["message"]
             raise Exception(f"=== YT API FORBIDDEN === | {msg}")
 
-    def next(self) -> Optional["ItemDataclassClass"]:
+    def fetch_next(self):
+        return self.fetch_next_page(self.next_page_token)
+
+    def next(
+        self,
+    ) -> Optional["ItemDataclassClass"]:  # TODO Move __next__to common ApiChannel
         if len(self.q) > 0:
             head_elem = self.q.pop(0)
             dataclass_item = self.ItemDataclassClass.from_raw_data(head_elem)
 
-            return (
-                dataclass_item if dataclass_item else self.next()
-            )  # TODO Move __next__to common ApiChannel
+            return dataclass_item if dataclass_item else self.next()
         elif self.next_page_token is None:
-            self.next_page_token = ""
-            self._published_after_param = None
+            self.reset_fetch_fields()
             raise StopIteration
         else:
-            self.fetch_next_page(self.next_page_token)
+            self.fetch_next()
             return self.next()
 
 

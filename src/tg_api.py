@@ -178,6 +178,9 @@ class TGApiChannel(ApiChannel):
 
             self.next_url = next_page_link
 
+    def fetch_next(self):
+        return self.on_fetch_new_chunk(self.next_url)
+
     def next(self) -> ItemDataclassClass:  # TODO Maybe change this method
         if len(self.q) > 0:
             head_post = self.q.pop(0)
@@ -185,10 +188,11 @@ class TGApiChannel(ApiChannel):
 
             return dataclass_item if dataclass_item else self.next()
         elif not self.next_url:
+            # self.reset_fetch_fields()
             raise StopIteration
         else:  # No left fetched posts in queue
             if self.max_requests is not None and self.max_requests > 0:
-                self.on_fetch_new_chunk(self.next_url)
+                self.fetch_next()
                 self.max_requests -= 1
                 return self.next()
             else:

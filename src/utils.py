@@ -3,6 +3,7 @@ import enum
 import functools
 import os
 import random
+import re
 import time
 from ssl import SSLError
 
@@ -112,3 +113,11 @@ def yt_datetime_to_str_param(d: datetime.date) -> str:
 def yt_str_param_to_datetime(s: str) -> datetime:
     s = s.replace("Z", "+00:00")
     return datetime.datetime.fromisoformat(s)
+
+
+def is_youtube_link(s: str):
+    return "http" in s or "youtube.com" in s or "youtu.be" in s
+
+
+def is_youtube_channel_id(s: str):
+    return re.search(r"^UC([-_a-zA-Z0-9])+$", s) is not None

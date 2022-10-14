@@ -1,5 +1,5 @@
+import datetime
 from dataclasses import dataclass
-from datetime import date, datetime
 from typing import Any, Generator, List, Optional, Sequence, TypeVar
 
 from .utils import date_to_datetime
@@ -13,7 +13,7 @@ class ItemDataclass:
 
     # id: int  # Unique attr
     url: str
-    pub_date: datetime
+    pub_date: datetime.datetime
     title: Optional[str]
     text_content: Optional[str] = None
     html_content: Optional[str] = None
@@ -29,12 +29,12 @@ ItemDataclassType = TypeVar("ItemDataclassType", bound=ItemDataclass)
 
 class ApiChannel:
     ItemDataclassClass: ItemDataclassType  # = ItemDataclass
-    SUPPORT_FILTER_BY_DATE: Optional[
-        bool
-    ] = False  # If api allow fetching items with date > self._published_after_param
-    _published_after_param: Optional[date] = None
+    SUPPORT_FILTER_BY_DATE = (
+        False  # If api allow fetching items with date > self._published_after_param
+    )
+    _published_after_param: Optional[datetime.date]
     q: List = list()
-    max_requests: Optional[int] = None
+    max_requests: Optional[int]
     url: str
 
     username: str = None
@@ -44,22 +44,30 @@ class ApiChannel:
 
     def __init__(self, url: str):
         self.url = url
-        self.q = list()
-        self.fetch_metadata()
+        self.reset_fetch_fields()
+        if not self.is_fetched_metadata():
+            self.fetch_metadata()
 
     def reset_fetch_fields(self):
         self.q = list()
         self.max_requests = None
+        self._published_after_param = None
 
     def next(self) -> "ItemDataclassClass":
+        pass
+
+    def is_fetched_metadata(self):
         pass
 
     def fetch_metadata(self):
         pass
 
+    def fetch_next(self):
+        pass
+
     # @my_lru_cache
     def fetch_items(
-        self, all=False, entries_count: int = None, after_date: date = None
+        self, all=False, entries_count: int = None, after_date: datetime.date = None
     ) -> Sequence[ItemDataclassType]:
         """
         Base function to get new updates from given feed.
