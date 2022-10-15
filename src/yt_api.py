@@ -2,6 +2,8 @@ import dataclasses
 import re
 from typing import List, Optional, Type
 
+from fastapi import HTTPException
+
 from .base import ApiChannel, ApiItem, ItemDataclass, ItemDataclassType
 from .utils import (
     YT_API_KEY,
@@ -77,8 +79,7 @@ class YTApiChannel(ApiChannel):
     def id(self):
         if not self.url:
             return None
-        r = r"(?<=channel\/)([A-z]|[0-9])+"
-        return re.search(r, self.url).group()
+        return re.search(r"(?<=channel\/)([A-z]|[0-9])+", self.url).group()
 
     @id.setter
     def id(self, value):
@@ -92,6 +93,8 @@ class YTApiChannel(ApiChannel):
         return self.username is not None  # TODO Check for existing data from DB
 
     def fetch_metadata(self):
+        super().fetch_metadata()
+
         if not self.metadata_search_string:
             raise Exception("No string for metadata search is given")
 
@@ -107,8 +110,9 @@ class YTApiChannel(ApiChannel):
 
         items = req.json()["items"]
         if len(items) == 0:
-            raise Exception(
-                f"Channel search failed for given string: {self.metadata_search_string}"
+            raise HTTPException(
+                404,
+                f"Youtube API: Channel search failed for given string: '{self.metadata_search_string}'",
             )
 
         channel_json = items[0]

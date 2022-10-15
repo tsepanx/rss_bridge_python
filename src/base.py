@@ -34,7 +34,7 @@ class ApiChannel:
     )
     _published_after_param: Optional[datetime.date]
     q: List = list()
-    max_requests: Optional[int]
+    max_requests = float("inf")
     url: str
 
     username: str = None
@@ -50,21 +50,25 @@ class ApiChannel:
 
     def reset_fetch_fields(self):
         self.q = list()
-        self.max_requests = None
+        self.max_requests = float("inf")
         self._published_after_param = None
 
     def is_fetched_metadata(self):
         pass
 
     def fetch_metadata(self):
-        pass
+        print("\nMETADATA | ", end="")
 
     def fetch_next(self):
         pass
 
     # @my_lru_cache
     def fetch_items(
-        self, all=False, entries_count: int = None, after_date: datetime.date = None
+        self,
+        all=False,
+        entries_count: int = None,
+        requests_count: int = None,
+        after_date: datetime.date = None,
     ) -> Sequence[ItemDataclassType]:
         """
         Base function to get new updates from given feed.
@@ -75,8 +79,16 @@ class ApiChannel:
         :returns: list of fetched entries
         """
 
-        if not (all or entries_count or after_date or self._published_after_param):
+        if not (
+            all
+            or entries_count
+            or requests_count
+            or after_date
+            or self._published_after_param
+        ):
             self.max_requests = 1
+        elif requests_count:
+            self.max_requests = requests_count
 
         if after_date and self.SUPPORT_FILTER_BY_DATE:
             self._published_after_param = after_date
@@ -119,7 +131,7 @@ class ApiChannel:
             self.reset_fetch_fields()
             raise StopIteration
         else:  # No left fetched posts in queue
-            if self.max_requests is not None and self.max_requests > 0:
+            if self.max_requests > 0:
                 self.fetch_next()
                 self.max_requests -= 1
                 return self.next()

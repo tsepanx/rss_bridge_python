@@ -119,7 +119,8 @@ class TGApiChannel(ApiChannel):
         super().__init__(url=url)
 
     def fetch_metadata(self):
-        print("\nMETADATA | ", end="")
+        super().fetch_metadata()
+
         req = logged_get(self.url)
         soup = bs4.BeautifulSoup(req.text, "html.parser")
 
