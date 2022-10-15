@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import List, Optional
 
 import bs4
+from fastapi import HTTPException
 
 from .base import ApiChannel, ItemDataclass, ItemDataclassType
 from .utils import (
@@ -127,6 +128,11 @@ class TGApiChannel(ApiChannel):
             name="div", attrs={"class": "tgme_channel_info_header"}, recursive=True
         )
 
+        if channel_metadata_wrapper is None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Telegram: channel with username @{self.username} not found",
+            )
         channel_title = channel_metadata_wrapper.findChild(name="span").contents[0]
 
         channel_img_url = channel_metadata_wrapper.findChild(name="img", recursive=True)
@@ -181,19 +187,5 @@ class TGApiChannel(ApiChannel):
     def fetch_next(self):
         return self.on_fetch_new_chunk(self.next_url)
 
-    def next(self) -> ItemDataclassClass:  # TODO Maybe change this method
-        if len(self.q) > 0:
-            head_post = self.q.pop(0)
-            dataclass_item = self.ItemDataclassClass.from_raw_data(head_post)
-
-            return dataclass_item if dataclass_item else self.next()
-        elif not self.next_url:
-            # self.reset_fetch_fields()
-            raise StopIteration
-        else:  # No left fetched posts in queue
-            if self.max_requests is not None and self.max_requests > 0:
-                self.fetch_next()
-                self.max_requests -= 1
-                return self.next()
-            else:
-                raise StopIteration
+    def is_iteration_ended(self):
+        return not self.next_url

@@ -53,9 +53,6 @@ class ApiChannel:
         self.max_requests = None
         self._published_after_param = None
 
-    def next(self) -> "ItemDataclassClass":
-        pass
-
     def is_fetched_metadata(self):
         pass
 
@@ -108,6 +105,26 @@ class ApiChannel:
         res = list(inner())
         self.reset_fetch_fields()
         return res
+
+    def is_iteration_ended(self):
+        pass
+
+    def next(self) -> "ItemDataclassClass":  # TODO Maybe change this method
+        if len(self.q) > 0:
+            head_post = self.q.pop(0)
+            dataclass_item = self.ItemDataclassClass.from_raw_data(head_post)
+
+            return dataclass_item if dataclass_item else self.next()
+        elif self.is_iteration_ended():
+            self.reset_fetch_fields()
+            raise StopIteration
+        else:  # No left fetched posts in queue
+            if self.max_requests is not None and self.max_requests > 0:
+                self.fetch_next()
+                self.max_requests -= 1
+                return self.next()
+            else:
+                raise StopIteration
 
 
 ApiChannelType = TypeVar("ApiChannelType", bound=ApiChannel)

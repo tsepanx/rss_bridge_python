@@ -160,20 +160,8 @@ class YTApiChannel(ApiChannel):
     def fetch_next(self):
         return self.fetch_next_page(self.next_page_token)
 
-    def next(
-        self,
-    ) -> Optional["ItemDataclassClass"]:  # TODO Move __next__to common ApiChannel
-        if len(self.q) > 0:
-            head_elem = self.q.pop(0)
-            dataclass_item = self.ItemDataclassClass.from_raw_data(head_elem)
-
-            return dataclass_item if dataclass_item else self.next()
-        elif self.next_page_token is None:
-            self.reset_fetch_fields()
-            raise StopIteration
-        else:
-            self.fetch_next()
-            return self.next()
+    def is_iteration_ended(self):
+        return self.next_page_token is None
 
 
 class YTApiVideo(ApiItem):
