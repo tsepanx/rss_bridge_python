@@ -6,14 +6,20 @@ from feedgen.feed import FeedGenerator
 
 from src.base import ApiChannel, ItemDataclass
 from src.tg_api import TGApiChannel
-from src.utils import RUN_IDENTIFIER, SRC_PATH, RssFormat, logged_get
+from src.utils import (
+    DEFAULT_RSS_FORMAT,
+    RUN_IDENTIFIER,
+    SRC_PATH,
+    RssFormat,
+    logged_get,
+)
 from src.yt_api import YTApiChannel
 
 
 def channel_gen_rss(
     channel: ApiChannel,
     items: Sequence[ItemDataclass],
-    rss_format: Optional[RssFormat] = RssFormat.ATOM,
+    rss_format: Optional[RssFormat] = DEFAULT_RSS_FORMAT,
     use_enclosures: Optional[bool] = False,
 ):
     title_indent_size = 22

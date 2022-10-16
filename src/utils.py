@@ -49,6 +49,9 @@ class RssFormat(str, enum.Enum):
     RSS = "rss"
 
 
+DEFAULT_RSS_FORMAT = RssFormat.ATOM
+
+
 class RssBridgeType(str, enum.Enum):
     TG = "tg"
     YT = "yt"

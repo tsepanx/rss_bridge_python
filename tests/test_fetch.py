@@ -7,16 +7,22 @@ import pytest
 from src.base import ApiChannelType, ItemDataclassType
 from src.rss import channel_gen_rss
 from src.tg_api import TGApiChannel
-from src.utils import DEFAULT_TZ, struct_time_to_datetime
+from src.utils import DEFAULT_TZ, RssFormat, struct_time_to_datetime
 from src.yt_api import YTApiChannel
 
 
 def gen_rss_check(
     channel: ApiChannelType,
     items: Sequence[ItemDataclassType],
+    rss_format: RssFormat,
     expected_content_type: str = "text/html",
 ):
-    path = channel_gen_rss(channel, items)
+    path = channel_gen_rss(
+        channel,
+        items,
+        rss_format=rss_format,
+        # use_enclosures=True
+    )
     assert path.endswith(".xml")
 
     # --- Parse file ---
@@ -30,21 +36,19 @@ def gen_rss_check(
         assert i.id is not None
         assert i.title is not None
         assert i_published <= prev_item_pub_date  # Dates are in descending order
-        assert i.content[0].type == expected_content_type
+        if rss_format is RssFormat.ATOM:
+            assert i.content[0].type == expected_content_type
 
         prev_item_pub_date = i_published
 
 
 @pytest.mark.parametrize("alias", ["black_triangle_tg", "ontol", "prostyemisli"])
 @pytest.mark.parametrize(
-    "with_enclosures",
-    [
-        # True,
-        False
-    ],
+    "rss_format",
+    [RssFormat.ATOM, RssFormat.RSS],
 )
 @pytest.mark.dependency()
-def test_tg_channel_fetch(alias, with_enclosures):
+def test_tg_channel_fetch(alias, rss_format):
     tg_channel = TGApiChannel(alias)
     posts_list = tg_channel.fetch_items()
 
@@ -58,7 +62,7 @@ def test_tg_channel_fetch(alias, with_enclosures):
 
     # --- RSS Generation ---
 
-    gen_rss_check(tg_channel, posts_list)
+    gen_rss_check(tg_channel, posts_list, rss_format)
 
 
 @pytest.mark.parametrize(
@@ -67,7 +71,11 @@ def test_tg_channel_fetch(alias, with_enclosures):
 @pytest.mark.parametrize(
     "published_after", [datetime.datetime(2022, 9, 15, tzinfo=DEFAULT_TZ)]
 )
-def test_yt_channel_fetch(channel_url, published_after):
+@pytest.mark.parametrize(
+    "rss_format",
+    [RssFormat.ATOM, RssFormat.RSS],
+)
+def test_yt_channel_fetch(channel_url, published_after, rss_format):
     yt_channel = YTApiChannel(channel_url)
 
     # --- Test filtered by date ---
@@ -85,4 +93,6 @@ def test_yt_channel_fetch(channel_url, published_after):
 
     # --- RSS Generation ---
 
-    gen_rss_check(yt_channel, videos_list, expected_content_type="text/plain")
+    gen_rss_check(
+        yt_channel, videos_list, rss_format, expected_content_type="text/plain"
+    )
