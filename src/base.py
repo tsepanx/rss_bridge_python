@@ -29,9 +29,7 @@ ItemDataclassType = TypeVar("ItemDataclassType", bound=ItemDataclass)
 
 class ApiChannel:
     ItemDataclassClass: ItemDataclassType  # = ItemDataclass
-    SUPPORT_FILTER_BY_DATE = (
-        False  # If api allow fetching items with date > self._published_after_param
-    )
+    SUPPORT_FILTER_BY_DATE = False  # If api supports fetching items filtered by date > self._published_after_param
     _published_after_param: Optional[datetime.date]
     q: List = list()
     max_requests = float("inf")
@@ -65,9 +63,9 @@ class ApiChannel:
     # @my_lru_cache
     def fetch_items(
         self,
-        all=False,
+        fetch_all=False,
         entries_count: int = None,
-        requests_count: int = None,
+        max_requests: int = None,
         after_date: datetime.date = None,
     ) -> Sequence[ItemDataclassType]:
         """
@@ -80,26 +78,26 @@ class ApiChannel:
         """
 
         if not (
-            all
+            fetch_all
             or entries_count
-            or requests_count
+            or max_requests
             or after_date
             or self._published_after_param
         ):
             self.max_requests = 1
-        elif requests_count:
-            self.max_requests = requests_count
+        elif max_requests:
+            self.max_requests = max_requests
 
         if after_date and self.SUPPORT_FILTER_BY_DATE:
             self._published_after_param = after_date
             return self.fetch_items(
-                all=all, entries_count=entries_count, after_date=None
+                fetch_all=fetch_all, entries_count=entries_count, after_date=None
             )
 
         def inner() -> Generator:
             try:
                 i = 0
-                while c := self.next():
+                while c := self.__next():
                     c: ItemDataclassType
                     if (
                         entries_count and i >= entries_count
@@ -121,12 +119,12 @@ class ApiChannel:
     def is_iteration_ended(self):
         pass
 
-    def next(self) -> "ItemDataclassClass":  # TODO Maybe change this method
+    def __next(self) -> "ItemDataclassClass":  # TODO Maybe change this method
         if len(self.q) > 0:
             head_post = self.q.pop(0)
             dataclass_item = self.ItemDataclassClass.from_raw_data(head_post)
 
-            return dataclass_item if dataclass_item else self.next()
+            return dataclass_item if dataclass_item else self.__next()
         elif self.is_iteration_ended():
             self.reset_fetch_fields()
             raise StopIteration
@@ -134,7 +132,7 @@ class ApiChannel:
             if self.max_requests > 0:
                 self.fetch_next()
                 self.max_requests -= 1
-                return self.next()
+                return self.__next()
             else:
                 raise StopIteration
 

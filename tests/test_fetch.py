@@ -1,12 +1,38 @@
 import datetime
+from typing import Sequence
 
 import feedparser
 import pytest
 
+from src.base import ApiChannelType, ItemDataclassType
 from src.rss import channel_gen_rss
 from src.tg_api import TGApiChannel
-from src.utils import DEFAULT_TZ, RssFormat, struct_time_to_datetime
+from src.utils import DEFAULT_TZ, struct_time_to_datetime
 from src.yt_api import YTApiChannel
+
+
+def gen_rss_check(
+    channel: ApiChannelType,
+    items: Sequence[ItemDataclassType],
+    expected_content_type: str = "text/html",
+):
+    path = channel_gen_rss(channel, items)
+    assert path.endswith(".xml")
+
+    # --- Parse file ---
+
+    parsed = feedparser.parse(path)
+    assert len(parsed.entries) == len(items)
+
+    prev_item_pub_date = datetime.datetime.max
+    for i in parsed.entries:
+        i_published = struct_time_to_datetime(i.published_parsed)
+        assert i.id is not None
+        assert i.title is not None
+        assert i_published <= prev_item_pub_date  # Dates are in descending order
+        assert i.content[0].type == expected_content_type
+
+        prev_item_pub_date = i_published
 
 
 @pytest.mark.parametrize("alias", ["black_triangle_tg", "ontol", "prostyemisli"])
@@ -22,7 +48,7 @@ def test_tg_channel_fetch(alias, with_enclosures):
     tg_channel = TGApiChannel(alias)
     posts_list = tg_channel.fetch_items()
 
-    # --- Simple test right fetch_items() ---
+    # --- Test fetch_items() ordered by date ---
 
     assert len(posts_list) <= 20
 
@@ -32,26 +58,7 @@ def test_tg_channel_fetch(alias, with_enclosures):
 
     # --- RSS Generation ---
 
-    path = channel_gen_rss(
-        tg_channel,
-        posts_list,
-        rss_format=RssFormat.ATOM,
-        use_enclosures=with_enclosures,
-    )
-    assert path.endswith(".xml")
-
-    parsed = feedparser.parse(path)
-    assert len(parsed.entries) == len(posts_list)
-
-    prev_item_pub_date = datetime.datetime.max
-    for i in parsed.entries:
-        i_published = struct_time_to_datetime(i.published_parsed)
-        assert i.id is not None
-        assert i.title is not None
-        assert i_published <= prev_item_pub_date  # Dates are in descending order
-        assert i.content[0].type == "text/html"
-
-        prev_item_pub_date = i_published
+    gen_rss_check(tg_channel, posts_list)
 
 
 @pytest.mark.parametrize(
@@ -63,15 +70,19 @@ def test_tg_channel_fetch(alias, with_enclosures):
 def test_yt_channel_fetch(channel_url, published_after):
     yt_channel = YTApiChannel(channel_url)
 
-    # --- Filter by date ---
+    # --- Test filtered by date ---
 
     videos_list = yt_channel.fetch_items(after_date=published_after)
 
     for v in videos_list:
         assert v.pub_date >= published_after
 
-    # --- Filter by count ---
+    # --- Test filtered by count ---
 
     n = 10
     videos_list2 = yt_channel.fetch_items(entries_count=n)
     assert len(videos_list2) == n
+
+    # --- RSS Generation ---
+
+    gen_rss_check(yt_channel, videos_list, expected_content_type="text/plain")

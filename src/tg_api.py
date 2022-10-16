@@ -157,7 +157,7 @@ class TGApiChannel(ApiChannel):
 
         :return: Next fetch_url for fetching next page of posts
         """
-        print(f"TG: NEW CHUNK | ", end="")
+        print("TG: NEW CHUNK | ", end="")
         req = logged_get(fetch_url)
         soup = bs4.BeautifulSoup(req.text, "html.parser")
 

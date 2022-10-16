@@ -19,6 +19,7 @@ async def get_feed(
     bridge_type: RssBridgeType = RssBridgeType.TG,
     format: Optional[RssFormat] = RssFormat.ATOM,
     count: Optional[int] = None,
+    requests: Optional[int] = None,
     days: Optional[int] = None,
     with_enclosures: Optional[bool] = False,
 ):
@@ -32,7 +33,9 @@ async def get_feed(
     channel = channel_class(username)
 
     after_date = datetime.date.today() - datetime.timedelta(1) * days if days else None
-    items = channel.fetch_items(entries_count=count, after_date=after_date)
+    items = channel.fetch_items(
+        entries_count=count, max_requests=requests, after_date=after_date
+    )
 
     path = channel_gen_rss(
         channel=channel,

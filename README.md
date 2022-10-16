@@ -13,19 +13,17 @@ but filter by count and start date, or even fetch all available entries.
 ### Types of feed to implement
 - [x] Youtube
   - [x] Channel metadata, videos
-  - [ ] Video - parse metadata: title, preview_img, etc
+  - [x] Video - parse metadata: title, preview_img, etc
+    - [ ] Integrate into tg feed
   - [ ] Playlist
 - [x] Telegram Channel
 - Review rss feeds of these sources
-  - ~~Mastodon~~ - Seems no rss available
+  - ~~Mastodon~~ - Rss exists
   - Gemini - Requires additional non-http parsing
 
 ### TODO & Features to implement
 - [x] Write tests
-- [ ] Limit entries count by made requests
+- [x] Limit entries count by made requests
 - [ ] Param for feed: whitelist/blacklist of keywords in title/text
 - [ ] DB support, to cache existing `rss` files
   - Specify update interval (5min)
-
-### Refactor
-- [x] channel_gen_rss & yt_gen_rss

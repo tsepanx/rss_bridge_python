@@ -120,6 +120,7 @@ class YTApiChannel(ApiChannel):
         self.id = channel_json["id"]["channelId"]
         self.full_name = channel_json["snippet"]["title"]
         self.description = channel_json["snippet"]["description"]
+        self.logo_url = channel_json["snippet"]["thumbnails"]["default"]["url"]
 
     # --- Iterator related funcs ---
     def reset_fetch_fields(self):

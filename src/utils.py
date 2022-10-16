@@ -23,10 +23,11 @@ if not os.path.exists(YT_API_KEY_PATH):
             YT_API_KEY = key
             f.write(key)
         except KeyError:
-            raise Exception("No Youtube API key specified: YT_API_KEY")
+            raise Exception("No Youtube API key specified in env: `YT_API_KEY`")
 else:
     with open(YT_API_KEY_PATH, "r") as f:
         YT_API_KEY = f.readline()
+
 YT_API_MAX_RESULTS_PER_PAGE = 50
 YT_BASE_API_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search"
 YT_BASE_API_VIDEOS_URL = "https://www.googleapis.com/youtube/v3/videos"
@@ -37,7 +38,6 @@ yt_channel_id_to_url = lambda channel_id: f"https://youtube.com/channel/{channel
 TG_BASE_URL = "https://t.me"
 TG_RSS_USE_HTML = True
 TG_RSS_HTML_APPEND_PREVIEW = True
-# DEFAULT_MAX_ENTRIES_TO_FETCH = 15
 
 RUN_IDENTIFIER = random.randint(1, 1000)
 
@@ -84,7 +84,7 @@ def shortened_text(s: str, max_chars=20) -> str:
 
 
 def logged_get(url, *args, **kwargs):
-    print(f"REQUEST -> ", end="")
+    print("REQUEST -> ", end="")
     try:
         req = requests.get(url, *args, **kwargs)
     except SSLError:
