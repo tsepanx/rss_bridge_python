@@ -29,12 +29,15 @@ ItemDataclassType = TypeVar("ItemDataclassType", bound=ItemDataclass)
 
 class ApiChannel:
     ItemDataclassClass: ItemDataclassType  # = ItemDataclass
+    url: str
+
+    # Fetching related attrs
     SUPPORT_FILTER_BY_DATE = False  # If api supports fetching items filtered by date > self._published_after_param
     _published_after_param: Optional[datetime.date]
     q: List = list()
     max_requests = float("inf")
-    url: str
 
+    # Metadata
     username: str = None
     full_name: str = None
     logo_url: Optional[str] = None

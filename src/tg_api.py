@@ -100,7 +100,7 @@ class TGPostDataclass(ItemDataclass):
 class TGApiChannel(ApiChannel):
     """
     Basic api related class representing single telegram channel
-    iter(TGApiChannel) iterates over its channel messages (posts) ordered by pub date
+    fetch_items(<filters_kwargs>) returns channel messages ("ItemDataclassClass") ordered by pub date
     """
 
     ItemDataclassClass: ItemDataclassType = TGPostDataclass
