@@ -139,9 +139,14 @@ class TGApiChannel(ApiChannel):
         channel_img_url = channel_metadata_wrapper.findChild(name="img", recursive=True)
         channel_img_url = channel_img_url.get("src")
 
-        channel_desc = soup.findChild(
-            name="div", attrs={"class": "tgme_channel_info_description"}, recursive=True
-        ).contents[0]
+        try:
+            channel_desc = soup.findChild(
+                name="div",
+                attrs={"class": "tgme_channel_info_description"},
+                recursive=True,
+            ).contents[0]
+        except AttributeError:
+            channel_desc = ""
 
         self.full_name = str(channel_title)
         self.logo_url = channel_img_url
