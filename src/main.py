@@ -1,10 +1,11 @@
 import datetime
-from typing import Optional
+from typing import Optional, Sequence
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 
+from src.base import ApiChannel, Item
 from src.rss import channel_gen_rss
 from src.tg_api import TGApiChannel
 from src.utils import RssBridgeType, RssFormat
@@ -23,6 +24,7 @@ async def get_feed(
     days: int | None = None,
     with_enclosures: bool | None = False,
 ):
+    channel_class: type[ApiChannel]
     if bridge_type is RssBridgeType.TG:
         channel_class = TGApiChannel
     elif bridge_type is RssBridgeType.YT:
@@ -33,7 +35,7 @@ async def get_feed(
     channel = channel_class(username)
 
     after_date = datetime.date.today() - datetime.timedelta(1) * days if days else None
-    items = channel.fetch_items(
+    items: Sequence[Item] = channel.fetch_items(
         entries_count=count, max_requests=requests, after_date=after_date
     )
 

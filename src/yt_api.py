@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from fastapi import HTTPException
 
-from .base import ApiChannel, ApiItem, ItemDataclass
+from .base import ApiChannel, ApiItem, Item
 from .utils import (
     YT_API_KEY,
     YT_API_MAX_RESULTS_PER_PAGE,
@@ -22,9 +22,9 @@ from .utils import (
 
 
 @dataclasses.dataclass
-class YTVideoDataclass(ItemDataclass):
+class YTVideo(Item):
     @classmethod
-    def from_raw_data(cls, json: dict) -> Optional["YTVideoDataclass"]:
+    def from_raw_data(cls, json: dict) -> Optional["YTVideo"]:
         video_id = json["id"]["videoId"]
         url = f"https://www.youtube.com/watch?v={video_id}"
 
@@ -54,7 +54,7 @@ class ApiFieldsEnum:
 
 
 class YTApiChannel(ApiChannel):
-    ItemDataclassClass: type[ItemDataclass] = YTVideoDataclass
+    ItemClass: type[Item] = YTVideo
 
     SUPPORT_FILTER_BY_DATE = True
     q: List[dict] = list()
@@ -70,8 +70,9 @@ class YTApiChannel(ApiChannel):
             url = yt_channel_id_to_url(s)
             self.metadata_search_string = s
         else:
-            url = None  # Will be fetched as metadata
+            # url will be fetched as metadata
             self.metadata_search_string = s
+            return
 
         super().__init__(url=url)
 
@@ -128,7 +129,7 @@ class YTApiChannel(ApiChannel):
         self.next_page_token = ""
         self._published_after_param = None
 
-    def fetch_next_page(self, page_token: str = None):
+    def fetch_next_page(self, page_token: str | None = None):
         _params = {
             "key": YT_API_KEY,
             "channelId": self.id,
@@ -170,7 +171,7 @@ class YTApiChannel(ApiChannel):
 
 
 class YTApiVideo(ApiItem):
-    ItemDataclassClass = YTVideoDataclass
+    ItemClass = YTVideo
 
     def __init__(self, video_id: str):
         self.id = video_id

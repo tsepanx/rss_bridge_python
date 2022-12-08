@@ -1,15 +1,17 @@
 import os
-from typing import Optional, Sequence
+import random
+from typing import Sequence
 
 import magic
 from feedgen.feed import FeedGenerator
 
-from src.base import ApiChannel, ItemDataclass
+from src.base import ApiChannel, Item
 from src.tg_api import TGApiChannel
 from src.utils import (
     DEFAULT_RSS_FORMAT,
     RUN_IDENTIFIER,
     SRC_PATH,
+    TG_RSS_USE_HTML,
     RssFormat,
     logged_get,
 )
@@ -18,13 +20,19 @@ from src.yt_api import YTApiChannel
 
 def channel_gen_rss(
     channel: ApiChannel,
-    items: Sequence[ItemDataclass],
+    items: Sequence[Item],
     rss_format: RssFormat | None = DEFAULT_RSS_FORMAT,
     use_enclosures: bool | None = False,
 ):
+    channel_username = (
+        channel.username
+        if channel.username
+        else "unknown" + str(random.randint(0, 1000))
+    )
+
     title_indent_size = 22
     title_indent_string = " " * (
-        title_indent_size - (min(title_indent_size, len(channel.username)))
+        title_indent_size - (min(title_indent_size, len(channel_username)))
     )
     if isinstance(channel, TGApiChannel):
         title_prefix = "TELEGRAM"
@@ -33,7 +41,7 @@ def channel_gen_rss(
     else:
         raise Exception("Unknown channel class")
 
-    feed_title = f"{title_prefix} {RUN_IDENTIFIER} | {channel.username}{title_indent_string}| {channel.full_name}"
+    feed_title = f"{title_prefix} {RUN_IDENTIFIER} | {channel_username}{title_indent_string}| {channel.full_name}"
     feed_url = channel.url
     feed_desc = channel.description
 
@@ -50,14 +58,14 @@ def channel_gen_rss(
     for i in reversed(items):
         link = i.url
 
-        if i.html_content:
+        if i.html_content and TG_RSS_USE_HTML:
             content = i.html_content
             content_type = "html"
         elif i.text_content:
             content = i.text_content
             content_type = None
         else:
-            raise Exception(f"ApiChannel {channel.url} has no text_content")
+            raise Exception(f"Item {i} has no appropriate content")
 
         fe = fg.add_entry()
         fe.id(i.url)
@@ -83,7 +91,7 @@ def channel_gen_rss(
     if not os.path.exists(dirname):
         os.mkdir(dirname)
 
-    dirname = os.path.join(dirname, channel.username)
+    dirname = os.path.join(dirname, channel_username)
     if not os.path.exists(dirname):
         os.mkdir(dirname)
 

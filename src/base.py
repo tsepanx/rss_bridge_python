@@ -1,34 +1,36 @@
 import datetime
 from dataclasses import dataclass
-from typing import Any, Generator, List, Optional, Sequence
+from typing import Any, Generator, Generic, List, Optional, ParamSpec, Sequence, TypeVar
 
 from .utils import date_to_datetime
 
 
 @dataclass
-class ItemDataclass:
+class Item:
     """
     Base interface defining Feed.fetch_items() return type
     """
 
     # id: int  # Unique attr
-    url: str
-    pub_date: datetime.datetime
-    title: str | None
+    url: str | None
+    pub_date: datetime.datetime | None
+    title: str | None = None
     text_content: str | None = None
     html_content: str | None = None
     preview_img_url: str | None = None
 
     @classmethod
-    def from_raw_data(cls, _: Any) -> type["ItemDataclass"] | None:
+    def from_raw_data(cls, _: Any) -> Optional["Item"]:
         pass
 
 
-# ItemDataclassType = TypeVar("ItemDataclassType", bound=ItemDataclass)
+# TODO
+# ItemDataclassType = TypeVar("ItemDataclassType", bound=Item)
+# T = TypeVar("T", bound=Item)
 
 
 class ApiChannel:
-    ItemDataclassClass: type[ItemDataclass]  # ItemDataclassType  # = ItemDataclass
+    ItemClass = Item
     url: str
 
     # Fetching related attrs
@@ -70,7 +72,7 @@ class ApiChannel:
         entries_count: int | None = None,
         max_requests: int | None = None,
         after_date: datetime.date | None = None,
-    ) -> Sequence["ItemDataclassClass"]:
+    ) -> Sequence[ItemClass]:
         """
         Base function to get new updates from given feed.
 
@@ -100,14 +102,16 @@ class ApiChannel:
         def inner() -> Generator:
             try:
                 i = 0
+                c: Item
                 while c := self.__next():
-                    c: ItemDataclass
                     if (
                         entries_count and i >= entries_count
                     ):  # Limited by max count of entries
                         return
-                    if after_date and c.pub_date > date_to_datetime(
+                    if (
                         after_date
+                        and c.pub_date
+                        and c.pub_date > date_to_datetime(after_date)
                     ):  # Limited by min date
                         return
                     yield c
@@ -122,10 +126,10 @@ class ApiChannel:
     def is_iteration_ended(self):
         pass
 
-    def __next(self) -> "ItemDataclassClass":  # TODO Maybe change this method
+    def __next(self):  # -> T:  # TODO Maybe change this method
         if len(self.q) > 0:
             head_post = self.q.pop(0)
-            dataclass_item = self.ItemDataclassClass.from_raw_data(head_post)
+            dataclass_item = self.ItemClass.from_raw_data(head_post)
 
             return dataclass_item if dataclass_item else self.__next()
         elif self.is_iteration_ended():
@@ -145,11 +149,11 @@ class ApiItem:
     Responsible for fetching single item from API
     """
 
-    ItemDataclassClass: type[ItemDataclass]
-    item_object: "ItemDataclassClass"
+    ItemClass: type[Item] = Item
+    item_object: "ItemClass"
 
     def __init__(self, url: str):
         self.url = url
 
-    def fetch_data(self) -> "ItemDataclassClass":
+    def fetch_data(self) -> "ItemClass":
         pass
