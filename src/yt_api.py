@@ -1,10 +1,10 @@
 import dataclasses
 import re
-from typing import List, Optional, Type
+from typing import List, Optional
 
 from fastapi import HTTPException
 
-from .base import ApiChannel, ApiItem, ItemDataclass, ItemDataclassType
+from .base import ApiChannel, ApiItem, ItemDataclass
 from .utils import (
     YT_API_KEY,
     YT_API_MAX_RESULTS_PER_PAGE,
@@ -54,7 +54,7 @@ class ApiFieldsEnum:
 
 
 class YTApiChannel(ApiChannel):
-    ItemDataclassClass: ItemDataclassType = YTVideoDataclass
+    ItemDataclassClass: type[ItemDataclass] = YTVideoDataclass
 
     SUPPORT_FILTER_BY_DATE = True
     q: List[dict] = list()
@@ -193,4 +193,4 @@ class YTApiVideo(ApiItem):
 
 
 class YTVideo:
-    ApiItemClass: Type[ApiItem] = YTApiVideo
+    ApiItemClass: type[ApiItem] = YTApiVideo

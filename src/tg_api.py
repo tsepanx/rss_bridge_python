@@ -6,7 +6,7 @@ from typing import List, Optional
 import bs4
 from fastapi import HTTPException
 
-from .base import ApiChannel, ItemDataclass, ItemDataclassType
+from .base import ApiChannel, ItemDataclass
 from .utils import (
     DEFAULT_TZ,
     TG_BASE_URL,
@@ -103,7 +103,7 @@ class TGApiChannel(ApiChannel):
     fetch_items(<filters_kwargs>) returns channel messages ("ItemDataclassClass") ordered by pub date
     """
 
-    ItemDataclassClass: ItemDataclassType = TGPostDataclass
+    ItemDataclassClass: type[ItemDataclass] = TGPostDataclass
 
     SUPPORT_FILTER_BY_DATE = False
     q: List[bs4.element.Tag] = list()

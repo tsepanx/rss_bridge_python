@@ -1,6 +1,6 @@
 import datetime
 from dataclasses import dataclass
-from typing import Any, Generator, List, Optional, Sequence, TypeVar
+from typing import Any, Generator, List, Optional, Sequence
 
 from .utils import date_to_datetime
 
@@ -20,15 +20,15 @@ class ItemDataclass:
     preview_img_url: Optional[str] = None
 
     @classmethod
-    def from_raw_data(cls, _: Any) -> Optional["ItemDataclassType"]:
+    def from_raw_data(cls, _: Any) -> type["ItemDataclass"] | None:
         pass
 
 
-ItemDataclassType = TypeVar("ItemDataclassType", bound=ItemDataclass)
+# ItemDataclassType = TypeVar("ItemDataclassType", bound=ItemDataclass)
 
 
 class ApiChannel:
-    ItemDataclassClass: ItemDataclassType  # = ItemDataclass
+    ItemDataclassClass: type[ItemDataclass]  # ItemDataclassType  # = ItemDataclass
     url: str
 
     # Fetching related attrs
@@ -70,7 +70,7 @@ class ApiChannel:
         entries_count: int = None,
         max_requests: int = None,
         after_date: datetime.date = None,
-    ) -> Sequence[ItemDataclassType]:
+    ) -> Sequence["ItemDataclassClass"]:
         """
         Base function to get new updates from given feed.
 
@@ -101,7 +101,7 @@ class ApiChannel:
             try:
                 i = 0
                 while c := self.__next():
-                    c: ItemDataclassType
+                    c: ItemDataclass
                     if (
                         entries_count and i >= entries_count
                     ):  # Limited by max count of entries
@@ -140,15 +140,12 @@ class ApiChannel:
                 raise StopIteration
 
 
-ApiChannelType = TypeVar("ApiChannelType", bound=ApiChannel)
-
-
 class ApiItem:
     """
     Responsible for fetching single item from API
     """
 
-    ItemDataclassClass: ItemDataclassType
+    ItemDataclassClass: type[ItemDataclass]
     item_object: "ItemDataclassClass"
 
     def __init__(self, url: str):

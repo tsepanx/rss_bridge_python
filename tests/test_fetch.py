@@ -4,7 +4,7 @@ from typing import Sequence
 import feedparser
 import pytest
 
-from src.base import ApiChannelType, ItemDataclassType
+from src.base import ApiChannel, ItemDataclass
 from src.rss import channel_gen_rss
 from src.tg_api import TGApiChannel
 from src.utils import DEFAULT_TZ, RssFormat, struct_time_to_datetime
@@ -12,8 +12,8 @@ from src.yt_api import YTApiChannel
 
 
 def gen_rss_check(
-    channel: ApiChannelType,
-    items: Sequence[ItemDataclassType],
+    channel: ApiChannel,
+    items: Sequence[ItemDataclass],
     rss_format: RssFormat,
     expected_content_type: str = "text/html",
 ):
