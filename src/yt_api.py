@@ -79,7 +79,7 @@ class YTApiChannel(ApiChannel):
     def id(self):
         if not self.url:
             return None
-        return re.search(r"(?<=channel\/)([A-z]|[0-9])+", self.url).group()
+        return re.search(r"(?<=channel/)([A-z]|[0-9])+", self.url).group()
 
     @id.setter
     def id(self, value):
@@ -190,7 +190,3 @@ class YTApiVideo(ApiItem):
         req = logged_get(YT_BASE_API_VIDEOS_URL, _params)
 
         self.item_object = self.ItemDataclassClass.from_raw_data(req.json())
-
-
-class YTVideo:
-    ApiItemClass: type[ApiItem] = YTApiVideo

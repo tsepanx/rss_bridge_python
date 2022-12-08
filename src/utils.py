@@ -97,7 +97,7 @@ def logged_get(url, *args, **kwargs):
     return req
 
 
-def date_to_datetime(d: datetime.date) -> datetime:
+def date_to_datetime(d: datetime.date) -> datetime.datetime:
     return datetime.datetime.combine(d, datetime.datetime.min.time(), DEFAULT_TZ)
 
 
@@ -113,7 +113,7 @@ def yt_datetime_to_str_param(d: datetime.date) -> str:
     )
 
 
-def yt_str_param_to_datetime(s: str) -> datetime:
+def yt_str_param_to_datetime(s: str) -> datetime.datetime:
     s = s.replace("Z", "+00:00")
     return datetime.datetime.fromisoformat(s)
 

@@ -19,7 +19,7 @@ from .utils import (
 
 @dataclass
 class TGPostDataclass(ItemDataclass):
-    preview_link_url: Optional[str] = None
+    preview_link_url: str | None = None
 
     @classmethod
     def from_raw_data(cls, data: bs4.element.Tag) -> Optional["TGPostDataclass"]:
@@ -107,7 +107,7 @@ class TGApiChannel(ApiChannel):
 
     SUPPORT_FILTER_BY_DATE = False
     q: List[bs4.element.Tag] = list()
-    next_url: Optional[str] = None
+    next_url: str | None = None
 
     def __init__(self, url_or_alias: str):
         channel_username = re.search("[^/]+(?=/$|$)", url_or_alias).group()

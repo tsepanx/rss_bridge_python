@@ -19,8 +19,8 @@ from src.yt_api import YTApiChannel
 def channel_gen_rss(
     channel: ApiChannel,
     items: Sequence[ItemDataclass],
-    rss_format: Optional[RssFormat] = DEFAULT_RSS_FORMAT,
-    use_enclosures: Optional[bool] = False,
+    rss_format: RssFormat | None = DEFAULT_RSS_FORMAT,
+    use_enclosures: bool | None = False,
 ):
     title_indent_size = 22
     title_indent_string = " " * (

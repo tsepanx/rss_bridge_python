@@ -18,10 +18,10 @@ async def get_feed(
     username: str,
     bridge_type: RssBridgeType = RssBridgeType.TG,
     format: Optional[RssFormat] = RssFormat.ATOM,
-    count: Optional[int] = None,
-    requests: Optional[int] = None,
-    days: Optional[int] = None,
-    with_enclosures: Optional[bool] = False,
+    count: int | None = None,
+    requests: int | None = None,
+    days: int | None = None,
+    with_enclosures: bool | None = False,
 ):
     if bridge_type is RssBridgeType.TG:
         channel_class = TGApiChannel

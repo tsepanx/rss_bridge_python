@@ -14,10 +14,10 @@ class ItemDataclass:
     # id: int  # Unique attr
     url: str
     pub_date: datetime.datetime
-    title: Optional[str]
-    text_content: Optional[str] = None
-    html_content: Optional[str] = None
-    preview_img_url: Optional[str] = None
+    title: str | None
+    text_content: str | None = None
+    html_content: str | None = None
+    preview_img_url: str | None = None
 
     @classmethod
     def from_raw_data(cls, _: Any) -> type["ItemDataclass"] | None:
@@ -38,10 +38,10 @@ class ApiChannel:
     max_requests = float("inf")
 
     # Metadata
-    username: str = None
-    full_name: str = None
-    logo_url: Optional[str] = None
-    description: Optional[str] = None
+    username: str | None = None
+    full_name: str | None = None
+    logo_url: str | None = None
+    description: str | None = None
 
     def __init__(self, url: str):
         self.url = url
@@ -67,9 +67,9 @@ class ApiChannel:
     def fetch_items(
         self,
         fetch_all=False,
-        entries_count: int = None,
-        max_requests: int = None,
-        after_date: datetime.date = None,
+        entries_count: int | None = None,
+        max_requests: int | None = None,
+        after_date: datetime.date | None = None,
     ) -> Sequence["ItemDataclassClass"]:
         """
         Base function to get new updates from given feed.
