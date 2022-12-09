@@ -32,3 +32,5 @@ jobs:
         run: isort . --check-only
       - name: Black
         run: black . --check
+      - name: mypy
+        run: mypy .

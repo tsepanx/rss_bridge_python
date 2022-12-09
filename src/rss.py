@@ -3,7 +3,7 @@ import random
 from typing import Sequence
 
 import magic
-from feedgen.feed import FeedGenerator
+from feedgen.feed import FeedGenerator  # type: ignore  # noqa
 
 from src.base import ApiChannel, Item
 from src.tg_api import TGApiChannel

@@ -1,7 +1,7 @@
 import datetime
 from typing import Sequence
 
-import feedparser
+import feedparser  # type: ignore  # noqa
 import pytest
 
 from src.base import ApiChannel, Item

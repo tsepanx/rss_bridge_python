@@ -1,6 +1,6 @@
 import datetime
 from dataclasses import dataclass
-from typing import Any, Generator, Generic, List, Optional, ParamSpec, Sequence, TypeVar
+from typing import Any, Generator, List, Optional, Sequence
 
 from .utils import date_to_datetime
 
@@ -72,7 +72,7 @@ class ApiChannel:
         entries_count: int | None = None,
         max_requests: int | None = None,
         after_date: datetime.date | None = None,
-    ) -> Sequence[ItemClass]:
+    ) -> Sequence[ItemClass]:  # type: ignore  # noqa
         """
         Base function to get new updates from given feed.
 
@@ -150,10 +150,10 @@ class ApiItem:
     """
 
     ItemClass: type[Item] = Item
-    item_object: "ItemClass"
+    item_object: "ItemClass"  # type: ignore  # noqa
 
     def __init__(self, url: str):
         self.url = url
 
-    def fetch_data(self) -> "ItemClass":
+    def fetch_data(self) -> "ItemClass":  # type: ignore  # noqa
         pass
