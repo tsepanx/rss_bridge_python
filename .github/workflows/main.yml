@@ -27,7 +27,7 @@ jobs:
       - name: Pytest
         env:
           YT_API_KEY: ${{ secrets.YT_API_KEY }}
-        run: pytest -v
+        run: PYTHONPATH="./" pytest -v
       - name: Isort
         run: isort . --check-only
       - name: Black
