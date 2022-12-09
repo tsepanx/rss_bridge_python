@@ -6,6 +6,7 @@ import random
 import re
 import time
 from ssl import SSLError
+from typing import Any, TypeVar
 
 import pytz
 import requests
@@ -55,6 +56,15 @@ DEFAULT_RSS_FORMAT = RssFormat.ATOM
 class RssBridgeType(str, enum.Enum):
     TG = "tg"
     YT = "yt"
+
+
+T = TypeVar("T")
+
+
+def make_sure(res: Any, return_type: type[T]) -> T | None:
+    if isinstance(res, return_type):
+        return res
+    return None
 
 
 def get_ttl_hash(seconds=3):
@@ -124,3 +134,9 @@ def is_youtube_link(s: str):
 
 def is_youtube_channel_id(s: str):
     return re.search(r"^UC([-_a-zA-Z0-9])+$", s) is not None
+
+
+def form_preview_html_text(preview_title: str, preview_desc: str) -> str:
+    if preview_title or preview_desc:
+        return f"<br/>Preview content:<br/>{preview_title}<br/>{preview_desc}"
+    return ""

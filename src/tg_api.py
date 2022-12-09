@@ -1,47 +1,26 @@
 import datetime
 import re
 from dataclasses import dataclass
-from typing import Any, List, Optional, TypeVar, Union
+from typing import List, Optional, TypeVar
 
 import bs4
 from fastapi import HTTPException
 
 from .base import ApiChannel, Item
+from .parsing import (
+    PreviewAttrs,
+    derive_post_datetime,
+    derive_post_text,
+    derive_post_url,
+    derive_preview_attrs,
+)
 from .utils import (
-    DEFAULT_TZ,
     TG_BASE_URL,
     TG_RSS_HTML_APPEND_PREVIEW,
+    form_preview_html_text,
     logged_get,
     shortened_text,
 )
-
-
-def derive_datetime_from_message_date_tag(parent_element) -> datetime.datetime | None:
-    if not isinstance(parent_element, bs4.Tag):
-        return None
-
-    message_datetime_tag = parent_element.contents[0]
-
-    if not isinstance(message_datetime_tag, bs4.Tag):
-        return None
-
-    datetime_str = message_datetime_tag.get("datetime")
-    if not isinstance(datetime_str, str):
-        return None
-
-    post_date = datetime.datetime.fromisoformat(datetime_str).replace(
-        tzinfo=DEFAULT_TZ
-    )  # Convert from string to pythonic format
-    return post_date
-
-
-T = TypeVar("T")
-
-
-def make_sure(res: Any, return_type: type[T]) -> T | None:
-    if isinstance(res, return_type):
-        return res
-    return None
 
 
 @dataclass
@@ -53,86 +32,27 @@ class TGPost(Item):
         """
         :param data: bs4 Tag element that is wrapper of single TG channel message
         """
-        post = data
 
-        msg_date_parent_tag = post.findChild(
-            name="a", attrs={"class": "tgme_widget_message_date"}
-        )
-        msg_date_parent_tag = make_sure(msg_date_parent_tag, bs4.Tag)
+        message_datetime: datetime.datetime | None = derive_post_datetime(data)
+        post_url: str | None = derive_post_url(data)
+        text, html_content = derive_post_text(data)
+        link_preview_attrs: PreviewAttrs = derive_preview_attrs(data)
 
-        message_datetime: datetime.datetime | None = (
-            derive_datetime_from_message_date_tag(msg_date_parent_tag)
-        )
-
-        if msg_date_parent_tag:
-            post_href = msg_date_parent_tag.get("href")
-            post_href = make_sure(post_href, str)
-        else:
-            post_href = None
-
-        text_wrapper = post.findChild(
-            name="div", attrs={"class": "tgme_widget_message_text"}
-        )
-
-        if not text_wrapper:
-            return None
-
-        text = text_wrapper.get_text("\n", strip=True)
-        html_content = str(text_wrapper)
-
-        link_preview_wrapper = post.findChild(
-            name="a", attrs={"class": "tgme_widget_message_link_preview"}
-        )
-
-        link_preview_wrapper = make_sure(link_preview_wrapper, bs4.Tag)
-
-        if link_preview_wrapper:  # There is a preview section
-            link_preview_url = link_preview_wrapper.get("href")
-            link_preview_url = make_sure(link_preview_url, str)
-
-            link_preview_img_tag = (
-                post.findChild(name="i", attrs={"class": "link_preview_right_image"})
-                or post.findChild(name="i", attrs={"class": "link_preview_image"})
-                or post.findChild(name="i", attrs={"class": "link_preview_video_thumb"})
+        if TG_RSS_HTML_APPEND_PREVIEW:
+            html_content += form_preview_html_text(
+                link_preview_attrs.title, link_preview_attrs.desc
             )
-
-            link_preview_img_tag = make_sure(link_preview_img_tag, bs4.Tag)
-
-            if link_preview_img_tag:
-                link_preview_img_tag_style = link_preview_img_tag.get("style")
-                link_preview_img_tag_style = make_sure(link_preview_img_tag_style, str)
-            else:
-                link_preview_img_tag_style = None
-
-            if link_preview_img_tag_style:
-                r = r"background-image:url\('(.*)'\)"
-                link_preview_img = re.findall(r, link_preview_img_tag_style)[0]
-            else:
-                link_preview_img = None
-
-            link_preview_title = link_preview_wrapper.find(
-                attrs={"class": "link_preview_title"}
-            )
-            link_preview_desc = link_preview_wrapper.find(
-                attrs={"class": "link_preview_description"}
-            )
-
-            if TG_RSS_HTML_APPEND_PREVIEW:
-                html_content += f"<br/>Preview content:<br/>{link_preview_title}<br/>{link_preview_desc}"
-        else:
-            link_preview_url = None
-            link_preview_img = None
 
         title = shortened_text(text, 50)
 
         return cls(
-            url=post_href,
+            url=post_url,
             pub_date=message_datetime,
             title=title,
             text_content=text,
             html_content=html_content,
-            preview_link_url=link_preview_url,
-            preview_img_url=link_preview_img,
+            preview_link_url=link_preview_attrs.url,
+            preview_media_url=link_preview_attrs.media_url,
         )
 
     def __repr__(self):

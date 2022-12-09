@@ -66,14 +66,15 @@ def test_tg_channel_fetch(alias, rss_format):
 
 
 @pytest.mark.parametrize(
-    "channel_url", ["https://youtube.com/channel/UCVls1GmFKf6WlTraIb_IaJg"]
+    "channel_url",
+    ["https://youtube.com/channel/UCVls1GmFKf6WlTraIb_IaJg", "distrotube"],
 )
 @pytest.mark.parametrize(
     "published_after", [datetime.datetime(2022, 9, 15, tzinfo=DEFAULT_TZ)]
 )
 @pytest.mark.parametrize(
     "rss_format",
-    [RssFormat.ATOM, RssFormat.RSS],
+    [RssFormat.ATOM],
 )
 def test_yt_channel_fetch(channel_url, published_after, rss_format):
     yt_channel = YTApiChannel(channel_url)

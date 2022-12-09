@@ -17,7 +17,7 @@ class Item:
     title: str | None = None
     text_content: str | None = None
     html_content: str | None = None
-    preview_img_url: str | None = None
+    preview_media_url: str | None = None
 
     @classmethod
     def from_raw_data(cls, _: Any) -> Optional["Item"]:

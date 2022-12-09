@@ -74,14 +74,14 @@ def channel_gen_rss(
         fe.content(content, type=content_type)
         fe.link(href=link)
 
-        if use_enclosures and i.preview_img_url:
-            media_bytes = logged_get(i.preview_img_url).content
+        if use_enclosures and i.preview_media_url:
+            media_bytes = logged_get(i.preview_media_url).content
 
             enclosure_type = magic.from_buffer(media_bytes, mime=True)
             enclosure_len = len(media_bytes)
 
             fe.link(
-                href=i.preview_img_url,
+                href=i.preview_media_url,
                 rel="enclosure",
                 type=enclosure_type,
                 length=str(enclosure_len),

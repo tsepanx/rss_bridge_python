@@ -40,7 +40,7 @@ class YTVideo(Item):
             pub_date=pub_date,
             title=title,
             text_content=description,
-            preview_img_url=preview_img_url,
+            preview_media_url=preview_img_url,
         )
 
     def __repr__(self):
@@ -62,19 +62,17 @@ class YTApiChannel(ApiChannel):
     metadata_search_string = None
 
     def __init__(self, s: str):
+        self.metadata_search_string = s
 
         if is_youtube_link(s):
-            url = s
-            self.metadata_search_string = s
+            _url = s
         elif is_youtube_channel_id(s):
-            url = yt_channel_id_to_url(s)
-            self.metadata_search_string = s
+            _url = yt_channel_id_to_url(s)
         else:
             # url will be fetched as metadata
-            self.metadata_search_string = s
-            return
+            _url = None
 
-        super().__init__(url=url)
+        super().__init__(url=_url)
 
     @property
     def id(self):
@@ -118,7 +116,7 @@ class YTApiChannel(ApiChannel):
 
         channel_json = items[0]
 
-        self.id = channel_json["id"]["channelId"]
+        self.id = channel_json["id"]["channelId"]  # self.url setter
         self.full_name = channel_json["snippet"]["title"]
         self.description = channel_json["snippet"]["description"]
         self.logo_url = channel_json["snippet"]["thumbnails"]["default"]["url"]
