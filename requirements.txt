@@ -13,3 +13,7 @@ pre-commit
 black
 pytz
 isort
+
+types-beautifulsoup4
+types-pytz
+types-requests
