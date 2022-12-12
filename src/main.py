@@ -1,6 +1,8 @@
 import datetime
+import functools
 from typing import Optional, Sequence
 
+import fastapi
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
@@ -14,7 +16,25 @@ from src.yt_api import YTApiChannel
 app = FastAPI()
 
 
+def raise_proper_http(func):
+    @functools.wraps(func)
+    async def wrapper(*args, **kwargs):
+        try:
+            result = await func(*args, **kwargs)
+        except HTTPException as e:
+            raise e
+        except Exception as e:
+            raise HTTPException(
+                status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"{e}"
+            )
+
+        return result
+
+    return wrapper
+
+
 @app.get("/rss-feed/{username}", response_class=FileResponse)
+@raise_proper_http
 async def get_feed(
     username: str,
     bridge_type: RssBridgeType = RssBridgeType.TG,
@@ -30,7 +50,10 @@ async def get_feed(
     elif bridge_type is RssBridgeType.YT:
         channel_class = YTApiChannel
     else:
-        raise HTTPException(status_code=404, detail="Unknown bridge_type")  # TODO 404?
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_405_METHOD_NOT_ALLOWED,
+            detail="Unknown bridge_type",
+        )
 
     channel = channel_class(username)
 

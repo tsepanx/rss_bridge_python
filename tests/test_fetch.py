@@ -42,10 +42,15 @@ def gen_rss_check(
         prev_item_pub_date = i_published
 
 
-@pytest.mark.parametrize("alias", ["black_triangle_tg", "ontol", "prostyemisli"])
+@pytest.mark.parametrize(
+    "alias", ["black_triangle_tg", "ontol", "prostyemisli", "bladerunnerblues"]
+)
 @pytest.mark.parametrize(
     "rss_format",
-    [RssFormat.ATOM, RssFormat.RSS],
+    [
+        RssFormat.ATOM,
+        # RssFormat.RSS
+    ],
 )
 @pytest.mark.dependency()
 def test_tg_channel_fetch(alias, rss_format):

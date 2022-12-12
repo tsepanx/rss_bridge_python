@@ -2,6 +2,7 @@ import dataclasses
 import re
 from typing import List, Optional
 
+import fastapi
 from fastapi import HTTPException
 
 from .base import ApiChannel, ApiItem, Item
@@ -110,7 +111,7 @@ class YTApiChannel(ApiChannel):
         items = req.json()["items"]
         if len(items) == 0:
             raise HTTPException(
-                404,
+                fastapi.status.HTTP_404_NOT_FOUND,
                 f"Youtube API: Channel search failed for given string: '{self.metadata_search_string}'",
             )
 
@@ -188,4 +189,6 @@ class YTApiVideo(ApiItem):
 
         req = logged_get(YT_BASE_API_VIDEOS_URL, _params)
 
-        self.item_object = self.ItemDataclassClass.from_raw_data(req.json())
+        self.item_object = self.ItemDataclassClass.from_raw_data(
+            req.json()
+        )  # TODO What?

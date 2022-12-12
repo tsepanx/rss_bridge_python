@@ -129,7 +129,10 @@ class ApiChannel:
     def __next(self):  # -> T:  # TODO Maybe change this method
         if len(self.q) > 0:
             head_post = self.q.pop(0)
+            # try:
             dataclass_item = self.ItemClass.from_raw_data(head_post)
+            # except Exception:
+            #     dataclass_item = None
 
             return dataclass_item if dataclass_item else self.__next()
         elif self.is_iteration_ended():

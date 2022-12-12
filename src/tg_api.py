@@ -1,9 +1,10 @@
 import datetime
 import re
 from dataclasses import dataclass
-from typing import List, Optional, TypeVar
+from typing import List, Optional
 
 import bs4
+import fastapi
 from fastapi import HTTPException
 
 from .base import ApiChannel, Item
@@ -35,7 +36,12 @@ class TGPost(Item):
 
         message_datetime: datetime.datetime | None = derive_post_datetime(data)
         post_url: str | None = derive_post_url(data)
-        text, html_content = derive_post_text(data)
+
+        text_attrs = derive_post_text(data)
+        if text_attrs is None:  # No text in post
+            return None
+
+        text, html_content = text_attrs
         link_preview_attrs: PreviewAttrs = derive_preview_attrs(data)
 
         if TG_RSS_HTML_APPEND_PREVIEW:
@@ -97,7 +103,7 @@ class TGApiChannel(ApiChannel):
 
         if channel_metadata_wrapper is None:
             raise HTTPException(
-                status_code=404,
+                status_code=fastapi.status.HTTP_404_NOT_FOUND,
                 detail=f"Telegram: channel with username @{self.username} not found",
             )
         channel_title = channel_metadata_wrapper.findChild(name="span").contents[0]

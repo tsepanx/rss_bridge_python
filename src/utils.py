@@ -6,7 +6,7 @@ import random
 import re
 import time
 from ssl import SSLError
-from typing import Any, TypeVar
+from typing import Any, Iterable, TypeVar
 
 import pytz
 import requests

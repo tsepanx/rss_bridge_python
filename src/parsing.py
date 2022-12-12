@@ -92,9 +92,7 @@ def derive_preview_attrs(post_element: bs4.Tag) -> PreviewAttrs:
         post_element.findChild(name="i", attrs={"class": i})
         for i in possible_image_tag_class
     ]
-    link_preview_img_tag = list(
-        functools.reduce(lambda a, b: a or b, link_preview_img_tag)
-    )
+    link_preview_img_tag = functools.reduce(lambda a, b: a or b, link_preview_img_tag)
     link_preview_img_tag = make_sure(link_preview_img_tag, bs4.Tag)
 
     if link_preview_img_tag:
