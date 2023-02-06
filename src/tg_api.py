@@ -45,9 +45,10 @@ class TGPost(Item):
         link_preview_attrs: PreviewAttrs = derive_preview_attrs(data)
 
         if TG_RSS_HTML_APPEND_PREVIEW:
-            html_content += form_preview_html_text(
-                link_preview_attrs.title, link_preview_attrs.desc
-            )
+            if link_preview_attrs.title and link_preview_attrs.desc:
+                html_content += form_preview_html_text(
+                    link_preview_attrs.title, link_preview_attrs.desc
+                )
 
         title = shortened_text(text, 50)
 

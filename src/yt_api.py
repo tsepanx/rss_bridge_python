@@ -73,7 +73,7 @@ class YTApiChannel(ApiChannel):
             # url will be fetched as metadata
             _url = None
 
-        super().__init__(url=_url)
+        super().__init__(url=_url)  # type: ignore
 
     @property
     def id(self):
