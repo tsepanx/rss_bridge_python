@@ -8,19 +8,18 @@ import time
 from ssl import SSLError
 from typing import Any, TypeVar
 
+import dotenv
 import pytz
 import requests
-import dotenv
-
 
 DEFAULT_TZ = pytz.UTC
 SRC_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 RUN_IDENTIFIER = random.randint(1, 1000)
 
-dotenv_vars = dotenv.load_dotenv('.env')
+dotenv_vars = dotenv.load_dotenv(".env")
 
-HTTP_HOST = os.getenv('HTTP_HOST', '0.0.0.0')
-HTTP_PORT = int(os.getenv('HTTP_PORT', 8081))
+HTTP_HOST = os.getenv("HTTP_HOST", "0.0.0.0")
+HTTP_PORT = int(os.getenv("HTTP_PORT", 8081))
 
 USE_YT_API = os.getenv("USE_YT_API", False)
 

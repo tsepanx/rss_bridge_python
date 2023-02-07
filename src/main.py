@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse
 from src.base import ApiChannel, Item
 from src.rss import channel_gen_rss
 from src.tg_api import TGApiChannel
-from src.utils import RssBridgeType, RssFormat, HTTP_HOST, HTTP_PORT
+from src.utils import HTTP_HOST, HTTP_PORT, RssBridgeType, RssFormat
 from src.yt_api import YTApiChannel
 
 app = FastAPI()
