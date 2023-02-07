@@ -1,5 +1,6 @@
 import datetime
 import functools
+import os
 from typing import Optional, Sequence
 
 import fastapi
@@ -10,7 +11,7 @@ from fastapi.responses import FileResponse
 from src.base import ApiChannel, Item
 from src.rss import channel_gen_rss
 from src.tg_api import TGApiChannel
-from src.utils import RssBridgeType, RssFormat
+from src.utils import RssBridgeType, RssFormat, HTTP_HOST, HTTP_PORT
 from src.yt_api import YTApiChannel
 
 app = FastAPI()
@@ -75,4 +76,4 @@ async def get_feed(
 
 
 if __name__ == "__main__":
-    uvicorn.run(app=app, host="0.0.0.0", port=8081)
+    uvicorn.run(app=app, host=HTTP_HOST, port=HTTP_PORT)

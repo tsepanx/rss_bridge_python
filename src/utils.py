@@ -6,43 +6,54 @@ import random
 import re
 import time
 from ssl import SSLError
-from typing import Any, Iterable, TypeVar, cast
+from typing import Any, TypeVar
 
 import pytz
 import requests
+import dotenv
+
 
 DEFAULT_TZ = pytz.UTC
-
 SRC_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-
-
-YT_API_KEY_PATH = os.path.join(SRC_PATH, ".YT_API_KEY")
-if not os.path.exists(YT_API_KEY_PATH):
-    with open(YT_API_KEY_PATH, "w") as f:
-        try:
-            key = os.environ["YT_API_KEY"]
-            YT_API_KEY = key
-            f.write(key)
-        except KeyError:
-            raise Exception("No Youtube API key specified in env: `YT_API_KEY`")
-else:
-    with open(YT_API_KEY_PATH, "r") as f:
-        YT_API_KEY = f.readline()
-
-YT_API_MAX_RESULTS_PER_PAGE = 50
-YT_BASE_API_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search"
-YT_BASE_API_VIDEOS_URL = "https://www.googleapis.com/youtube/v3/videos"
-
-yt_id_to_url = lambda x: f"https://www.youtube.com/watch?v={x}"
-yt_channel_id_to_url = lambda channel_id: f"https://youtube.com/channel/{channel_id}"
-
-TG_BASE_URL = "https://t.me"
-TG_RSS_USE_HTML = True
-TG_RSS_HTML_APPEND_PREVIEW = True
-
 RUN_IDENTIFIER = random.randint(1, 1000)
 
-last_n_weeks = lambda n: datetime.date.today() - n * datetime.timedelta(days=7)
+dotenv_vars = dotenv.load_dotenv('.env')
+
+HTTP_HOST = os.getenv('HTTP_HOST', '0.0.0.0')
+HTTP_PORT = int(os.getenv('HTTP_PORT', 8081))
+
+USE_YT_API = os.getenv("USE_YT_API", False)
+
+if USE_YT_API:
+    YT_API_KEY = os.getenv("YT_API_KEY", None)
+
+    if not YT_API_KEY:
+        raise Exception("No Youtube API key specified in env: `YT_API_KEY`")
+
+    YT_API_MAX_RESULTS_PER_PAGE = os.getenv("YT_API_MAX_RESULTS_PER_PAGE", None)
+    YT_BASE_API_SEARCH_URL = os.getenv("YT_BASE_API_SEARCH_URL", None)
+    YT_BASE_API_VIDEOS_URL = os.getenv("YT_BASE_API_VIDEOS_URL", None)
+else:
+    YT_API_KEY = None
+    YT_API_MAX_RESULTS_PER_PAGE = None
+    YT_BASE_API_SEARCH_URL = None
+    YT_BASE_API_VIDEOS_URL = None
+
+TG_BASE_URL = os.getenv("TG_BASE_URL", None)
+TG_RSS_USE_HTML = os.getenv("TG_RSS_USE_HTML", False)
+TG_RSS_HTML_APPEND_PREVIEW = os.getenv("TG_RSS_HTML_APPEND_PREVIEW", False)
+
+
+def yt_id_to_url(x):
+    return f"https://www.youtube.com/watch?v={x}"
+
+
+def yt_channel_id_to_url(channel_id):
+    return f"https://youtube.com/channel/{channel_id}"
+
+
+def last_n_weeks_date(n: int):
+    return datetime.date.today() - n * datetime.timedelta(days=7)
 
 
 class RssFormat(str, enum.Enum):

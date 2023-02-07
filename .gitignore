@@ -2,6 +2,7 @@ __pycache__/
 .idea/
 
 .YT_API_KEY*
+.env
 
 feeds/
 *.xml
