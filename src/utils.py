@@ -106,14 +106,19 @@ def shortened_text(s: str, max_chars=20) -> str:
     return s[: min(len(s), max_chars)].strip().replace("\n", " ") + "..."
 
 
-def logged_get(url, *args, **kwargs):
+import requests_cache
+
+session = requests_cache.CachedSession('demo_cache')
+
+
+def logged_get(url, **kwargs):
     print("REQUEST -> ", end="")
     try:
-        req = requests.get(url, *args, **kwargs)
+        req = session.get(url, **kwargs)
     except SSLError:
         raise Exception("No connection to the internet")
 
-    print(f"[{req.status_code}] {req.url}")
+    print(f"[{req.status_code}] {req.url} | ")
     return req
 
 

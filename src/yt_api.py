@@ -150,7 +150,7 @@ class YTApiChannel(ApiChannel):
                 }
             )
 
-        req = logged_get(YT_BASE_API_SEARCH_URL, _params)
+        req = logged_get(YT_BASE_API_SEARCH_URL, params=_params)
 
         if req.status_code == 200:
             json = req.json()
@@ -170,7 +170,7 @@ class YTApiChannel(ApiChannel):
 
 
 class YTApiVideo(ApiItem):
-    ItemClass = YTVideo
+    ItemClassType = YTVideo
 
     def __init__(self, video_id: str):
         self.id = video_id
@@ -187,8 +187,8 @@ class YTApiVideo(ApiItem):
             "part": "snippet",
         }
 
-        req = logged_get(YT_BASE_API_VIDEOS_URL, _params)
+        req = logged_get(YT_BASE_API_VIDEOS_URL, params=_params)
 
-        self.item_object = self.ItemDataclassClass.from_raw_data(
+        self.item_object = self.ItemClassType.from_raw_data(
             req.json()
         )  # TODO What?

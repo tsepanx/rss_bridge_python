@@ -152,11 +152,11 @@ class ApiItem:
     Responsible for fetching single item from API
     """
 
-    ItemClass: type[Item] = Item
-    item_object: "ItemClass"  # type: ignore  # noqa
+    ItemClassType: type[Item] = Item
+    item_object: "ItemClassType"  # type: ignore  # noqa
 
     def __init__(self, url: str):
         self.url = url
 
-    def fetch_data(self) -> "ItemClass":  # type: ignore  # noqa
+    def fetch_data(self) -> "ItemClassType":  # type: ignore  # noqa
         pass

@@ -13,6 +13,7 @@ pre-commit
 black
 pytz
 isort
+requests-cache
 
 types-beautifulsoup4
 types-pytz
