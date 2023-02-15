@@ -128,9 +128,10 @@ class TGApiChannel(ApiChannel):
     # --- Iterator related funcs ---
     # @lru_cache
     # @limit_requests(count=1)  # TODO Limit fetch_items count if no attr applied
-    def on_fetch_new_chunk(self, fetch_url: str):  # -> Optional[str]:
+    def on_fetch_new_chunk(self, fetch_url: str, retry_more=True):  # -> Optional[str]:
         """
         :param fetch_url: Link to previous channel posts.
+        :param retry_more Flag indicates whether this func can be called recursively again or not
         example: https://t.me/s/notboring_tech?before=2422
 
         :return: Next fetch_url for fetching next page of posts
@@ -152,8 +153,9 @@ class TGApiChannel(ApiChannel):
         )
 
         if not messages_more_tag:
-            print("Retrying fetch_items...")
-            self.on_fetch_new_chunk(fetch_url)  # Try to fetch_items again
+            if retry_more:
+                print("Retrying fetch_items...")
+                self.on_fetch_new_chunk(fetch_url, retry_more=False)  # Try to fetch_items again
 
         if isinstance(messages_more_tag, bs4.Tag):
             if messages_more_tag.get("data-after"):  # We reached end of posts list
