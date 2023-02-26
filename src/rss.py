@@ -29,6 +29,7 @@ from src.yt_api import (
 )
 
 
+# pylint: disable=too-many-locals, too-many-branches, too-many-statements
 def channel_gen_rss(
     channel: ApiChannel,
     items: Sequence[Item],

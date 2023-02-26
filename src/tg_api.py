@@ -83,7 +83,7 @@ class TGApiChannel(ApiChannel):
     ItemClass: type[Item] = TGPost
 
     SUPPORT_FILTER_BY_DATE = False
-    q: List[bs4.element.Tag] = list()
+    q: List[bs4.element.Tag] = []
     next_url: str | None = None
 
     def __init__(self, url_or_alias: str):

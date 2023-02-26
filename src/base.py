@@ -46,7 +46,7 @@ class ApiChannel:
     # Fetching related attrs
     SUPPORT_FILTER_BY_DATE = False  # If api supports fetching items filtered by date > self._published_after_param
     _published_after_param: Optional[datetime.date]
-    q: List = list()
+    q: List = []
     max_requests = float("inf")
 
     # Metadata
@@ -62,7 +62,7 @@ class ApiChannel:
             self.fetch_metadata()
 
     def reset_fetch_fields(self):
-        self.q = list()
+        self.q = []
         self.max_requests = float("inf")
         self._published_after_param = None
 
@@ -131,16 +131,18 @@ class ApiChannel:
             #     dataclass_item = None
 
             return dataclass_item if dataclass_item else self.__next()
-        elif self.is_iteration_ended():
+
+        if self.is_iteration_ended():
             self.reset_fetch_fields()
             raise StopIteration
-        else:  # No left fetched posts in queue
-            if self.max_requests > 0:
-                self.fetch_next()
-                self.max_requests -= 1
-                return self.__next()
-            else:
-                raise StopIteration
+
+        # else:  # No left fetched posts in queue
+        if self.max_requests <= 0:
+            raise StopIteration
+
+        self.fetch_next()
+        self.max_requests -= 1
+        return self.__next()
 
 
 class ApiItem:

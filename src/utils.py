@@ -24,9 +24,9 @@ RUN_IDENTIFIER = random.randint(1, 1000)
 dotenv_vars = dotenv.load_dotenv(".env")
 
 HTTP_HOST = os.getenv("HTTP_HOST", "0.0.0.0")
-HTTP_PORT = int(os.getenv("HTTP_PORT", 8081))
+HTTP_PORT = int(os.getenv("HTTP_PORT", "8081"))
 
-USE_YT_API = os.getenv("USE_YT_API", False)
+USE_YT_API = bool(os.getenv("USE_YT_API", "False"))
 
 if USE_YT_API:
     YT_API_KEY = os.getenv("YT_API_KEY", None)
@@ -44,8 +44,8 @@ else:
     YT_BASE_API_VIDEOS_URL = None
 
 TG_BASE_URL = os.getenv("TG_BASE_URL", None)
-TG_RSS_USE_HTML = os.getenv("TG_RSS_USE_HTML", False)
-TG_RSS_HTML_APPEND_PREVIEW = os.getenv("TG_RSS_HTML_APPEND_PREVIEW", False)
+TG_RSS_USE_HTML = bool(os.getenv("TG_RSS_USE_HTML", "False"))
+TG_RSS_HTML_APPEND_PREVIEW = bool(os.getenv("TG_RSS_HTML_APPEND_PREVIEW", "False"))
 
 
 def yt_id_to_url(x):
@@ -93,7 +93,7 @@ def my_lru_cache(func):
 
     # @functools.wraps(func)
     @functools.lru_cache
-    def inner(self, *args, ttl_hash=new_ttl_hash, **kwargs):
+    def inner(self, *args, _=new_ttl_hash, **kwargs):
         return func(self, *args, **kwargs)
 
     return inner
@@ -122,8 +122,8 @@ def logged_get(url, **kwargs):
     print("REQUEST -> ", end="")
     try:
         req = session.get(url, **kwargs)
-    except SSLError:
-        raise Exception("No connection to the internet")
+    except SSLError as exc:
+        raise Exception("No connection to the internet") from exc
 
     print(f"[{req.status_code}] {req.url} | ")
     return req

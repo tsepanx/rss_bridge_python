@@ -63,11 +63,12 @@ class ApiFieldsEnum:
     PUBLISHED_AFTER = "publishedAfter"
 
 
+# pylint: disable=too-many-instance-attributes
 class YTApiChannel(ApiChannel):
     ItemClass: type[Item] = YTVideo
 
     SUPPORT_FILTER_BY_DATE = True
-    q: List[dict] = list()
+    q: List[dict] = []
     next_page_token: str = ""
     metadata_search_string = None
 

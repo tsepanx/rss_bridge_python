@@ -46,19 +46,20 @@ def raise_proper_http(func):
         except HTTPException as e:
             raise e
         except Exception as e:
-            raise HTTPException(status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"{e}")
+            raise HTTPException(status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"{e}") from e
 
         return result
 
     return wrapper
 
 
+# pylint: disable=too-many-arguments
 @app.get("/rss-feed/{username}", response_class=FileResponse)
 @raise_proper_http
 async def get_feed(
     username: str,
     bridge_type: RssBridgeType = RssBridgeType.TG,
-    format: Optional[RssFormat] = RssFormat.ATOM,
+    rss_format: Optional[RssFormat] = RssFormat.ATOM,
     count: int | None = None,
     requests: int | None = None,
     days: int | None = None,
@@ -83,7 +84,7 @@ async def get_feed(
     path = channel_gen_rss(
         channel=channel,
         items=items,
-        rss_format=format,
+        rss_format=rss_format,
         use_enclosures=with_enclosures,
     )
 
