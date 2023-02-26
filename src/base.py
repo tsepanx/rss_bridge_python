@@ -1,8 +1,18 @@
 import datetime
-from dataclasses import dataclass
-from typing import Any, Generator, List, Optional, Sequence
+from dataclasses import (
+    dataclass,
+)
+from typing import (
+    Any,
+    Generator,
+    List,
+    Optional,
+    Sequence,
+)
 
-from .utils import date_to_datetime
+from .utils import (
+    date_to_datetime,
+)
 
 
 @dataclass
@@ -82,37 +92,23 @@ class ApiChannel:
         :returns: list of fetched entries
         """
 
-        if not (
-            fetch_all
-            or entries_count
-            or max_requests
-            or after_date
-            or self._published_after_param
-        ):
+        if not (fetch_all or entries_count or max_requests or after_date or self._published_after_param):
             self.max_requests = 1
         elif max_requests:
             self.max_requests = max_requests
 
         if after_date and self.SUPPORT_FILTER_BY_DATE:
             self._published_after_param = after_date
-            return self.fetch_items(
-                fetch_all=fetch_all, entries_count=entries_count, after_date=None
-            )
+            return self.fetch_items(fetch_all=fetch_all, entries_count=entries_count, after_date=None)
 
         def inner() -> Generator:
             try:
                 i = 0
                 c: Item
                 while c := self.__next():
-                    if (
-                        entries_count and i >= entries_count
-                    ):  # Limited by max count of entries
+                    if entries_count and i >= entries_count:  # Limited by max count of entries
                         return
-                    if (
-                        after_date
-                        and c.pub_date
-                        and c.pub_date > date_to_datetime(after_date)
-                    ):  # Limited by min date
+                    if after_date and c.pub_date and c.pub_date > date_to_datetime(after_date):  # Limited by min date
                         return
                     yield c
                     i += 1

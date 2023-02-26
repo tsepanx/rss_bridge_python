@@ -1,14 +1,29 @@
 import datetime
-from typing import Sequence
+from typing import (
+    Sequence,
+)
 
 import feedparser  # type: ignore  # noqa
 import pytest
 
-from src.base import ApiChannel, Item
-from src.rss import channel_gen_rss
-from src.tg_api import TGApiChannel
-from src.utils import DEFAULT_TZ, RssFormat, struct_time_to_datetime
-from src.yt_api import YTApiChannel
+from src.base import (
+    ApiChannel,
+    Item,
+)
+from src.rss import (
+    channel_gen_rss,
+)
+from src.tg_api import (
+    TGApiChannel,
+)
+from src.utils import (
+    DEFAULT_TZ,
+    RssFormat,
+    struct_time_to_datetime,
+)
+from src.yt_api import (
+    YTApiChannel,
+)
 
 
 def gen_rss_check(
@@ -42,9 +57,7 @@ def gen_rss_check(
         prev_item_pub_date = i_published
 
 
-@pytest.mark.parametrize(
-    "alias", ["black_triangle_tg", "ontol", "prostyemisli", "bladerunnerblues"]
-)
+@pytest.mark.parametrize("alias", ["black_triangle_tg", "ontol", "prostyemisli", "bladerunnerblues"])
 @pytest.mark.parametrize(
     "rss_format",
     [
@@ -74,9 +87,7 @@ def test_tg_channel_fetch(alias, rss_format):
     "channel_url",
     ["https://youtube.com/channel/UCVls1GmFKf6WlTraIb_IaJg", "distrotube"],
 )
-@pytest.mark.parametrize(
-    "published_after", [datetime.datetime(2022, 9, 15, tzinfo=DEFAULT_TZ)]
-)
+@pytest.mark.parametrize("published_after", [datetime.datetime(2022, 9, 15, tzinfo=DEFAULT_TZ)])
 @pytest.mark.parametrize(
     "rss_format",
     [RssFormat.ATOM],
@@ -99,6 +110,4 @@ def test_yt_channel_fetch(channel_url, published_after, rss_format):
 
     # --- RSS Generation ---
 
-    gen_rss_check(
-        yt_channel, videos_list, rss_format, expected_content_type="text/plain"
-    )
+    gen_rss_check(yt_channel, videos_list, rss_format, expected_content_type="text/plain")

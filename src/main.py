@@ -1,18 +1,39 @@
 import datetime
 import functools
-import os
-from typing import Optional, Sequence
+from typing import (
+    Optional,
+    Sequence,
+)
 
 import fastapi
 import uvicorn
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi import (
+    FastAPI,
+    HTTPException,
+)
+from fastapi.responses import (
+    FileResponse,
+)
 
-from src.base import ApiChannel, Item
-from src.rss import channel_gen_rss
-from src.tg_api import TGApiChannel
-from src.utils import HTTP_HOST, HTTP_PORT, RssBridgeType, RssFormat
-from src.yt_api import YTApiChannel
+from src.base import (
+    ApiChannel,
+    Item,
+)
+from src.rss import (
+    channel_gen_rss,
+)
+from src.tg_api import (
+    TGApiChannel,
+)
+from src.utils import (
+    HTTP_HOST,
+    HTTP_PORT,
+    RssBridgeType,
+    RssFormat,
+)
+from src.yt_api import (
+    YTApiChannel,
+)
 
 app = FastAPI()
 
@@ -25,9 +46,7 @@ def raise_proper_http(func):
         except HTTPException as e:
             raise e
         except Exception as e:
-            raise HTTPException(
-                status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"{e}"
-            )
+            raise HTTPException(status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"{e}")
 
         return result
 
@@ -59,9 +78,7 @@ async def get_feed(
     channel = channel_class(username)
 
     after_date = datetime.date.today() - datetime.timedelta(1) * days if days else None
-    items: Sequence[Item] = channel.fetch_items(
-        entries_count=count, max_requests=requests, after_date=after_date
-    )
+    items: Sequence[Item] = channel.fetch_items(entries_count=count, max_requests=requests, after_date=after_date)
 
     path = channel_gen_rss(
         channel=channel,

@@ -1,11 +1,20 @@
 import dataclasses
 import re
-from typing import List, Optional
+from typing import (
+    List,
+    Optional,
+)
 
 import fastapi
-from fastapi import HTTPException
+from fastapi import (
+    HTTPException,
+)
 
-from .base import ApiChannel, ApiItem, Item
+from .base import (
+    ApiChannel,
+    ApiItem,
+    Item,
+)
 from .utils import (
     YT_API_KEY,
     YT_API_MAX_RESULTS_PER_PAGE,
@@ -142,13 +151,7 @@ class YTApiChannel(ApiChannel):
             _params.update({ApiFieldsEnum.PAGE_TOKEN: page_token})
 
         if self._published_after_param and self.SUPPORT_FILTER_BY_DATE:
-            _params.update(
-                {
-                    ApiFieldsEnum.PUBLISHED_AFTER: yt_datetime_to_str_param(
-                        self._published_after_param
-                    )
-                }
-            )
+            _params.update({ApiFieldsEnum.PUBLISHED_AFTER: yt_datetime_to_str_param(self._published_after_param)})
 
         req = logged_get(YT_BASE_API_SEARCH_URL, params=_params)
 
@@ -189,6 +192,4 @@ class YTApiVideo(ApiItem):
 
         req = logged_get(YT_BASE_API_VIDEOS_URL, params=_params)
 
-        self.item_object = self.ItemClassType.from_raw_data(
-            req.json()
-        )  # TODO What?
+        self.item_object = self.ItemClassType.from_raw_data(req.json())  # TODO What?

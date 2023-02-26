@@ -5,12 +5,17 @@ import os
 import random
 import re
 import time
-from ssl import SSLError
-from typing import Any, TypeVar
+from ssl import (
+    SSLError,
+)
+from typing import (
+    Any,
+    TypeVar,
+)
 
 import dotenv
 import pytz
-import requests
+import requests_cache
 
 DEFAULT_TZ = pytz.UTC
 SRC_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
@@ -106,9 +111,11 @@ def shortened_text(s: str, max_chars=20) -> str:
     return s[: min(len(s), max_chars)].strip().replace("\n", " ") + "..."
 
 
-import requests_cache
-
-session = requests_cache.CachedSession('demo_cache')
+session = requests_cache.CachedSession(
+    "demo_cache",
+    cache_control=True,
+    expire_after=datetime.timedelta(minutes=5),
+)
 
 
 def logged_get(url, **kwargs):
@@ -131,11 +138,7 @@ def struct_time_to_datetime(struct: time.struct_time) -> datetime.datetime:
 
 
 def yt_datetime_to_str_param(d: datetime.date) -> str:
-    return (
-        datetime.datetime.combine(d, datetime.datetime.min.time(), DEFAULT_TZ)
-        .isoformat()
-        .replace("+00:00", "Z")
-    )
+    return datetime.datetime.combine(d, datetime.datetime.min.time(), DEFAULT_TZ).isoformat().replace("+00:00", "Z")
 
 
 def yt_str_param_to_datetime(s: str) -> datetime.datetime:

@@ -1,12 +1,21 @@
 import os
 import random
-from typing import Sequence
+from typing import (
+    Sequence,
+)
 
 import magic
-from feedgen.feed import FeedGenerator  # type: ignore  # noqa
+from feedgen.feed import (  # type: ignore  # noqa
+    FeedGenerator,
+)
 
-from src.base import ApiChannel, Item
-from src.tg_api import TGApiChannel
+from src.base import (
+    ApiChannel,
+    Item,
+)
+from src.tg_api import (
+    TGApiChannel,
+)
 from src.utils import (
     DEFAULT_RSS_FORMAT,
     RUN_IDENTIFIER,
@@ -15,7 +24,9 @@ from src.utils import (
     RssFormat,
     logged_get,
 )
-from src.yt_api import YTApiChannel
+from src.yt_api import (
+    YTApiChannel,
+)
 
 
 def channel_gen_rss(
@@ -24,16 +35,10 @@ def channel_gen_rss(
     rss_format: RssFormat | None = DEFAULT_RSS_FORMAT,
     use_enclosures: bool | None = False,
 ):
-    channel_username = (
-        channel.username
-        if channel.username
-        else "unknown" + str(random.randint(0, 1000))
-    )
+    channel_username = channel.username if channel.username else "unknown" + str(random.randint(0, 1000))
 
     title_indent_size = 22
-    title_indent_string = " " * (
-        title_indent_size - (min(title_indent_size, len(channel_username)))
-    )
+    title_indent_string = " " * (title_indent_size - (min(title_indent_size, len(channel_username))))
     if isinstance(channel, TGApiChannel):
         title_prefix = "TELEGRAM"
     elif isinstance(channel, YTApiChannel):

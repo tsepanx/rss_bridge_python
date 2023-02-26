@@ -1,13 +1,23 @@
 import datetime
 import re
-from dataclasses import dataclass
-from typing import List, Optional
+from dataclasses import (
+    dataclass,
+)
+from typing import (
+    List,
+    Optional,
+)
 
 import bs4
 import fastapi
-from fastapi import HTTPException
+from fastapi import (
+    HTTPException,
+)
 
-from .base import ApiChannel, Item
+from .base import (
+    ApiChannel,
+    Item,
+)
 from .parsing import (
     PreviewAttrs,
     derive_post_datetime,
@@ -46,9 +56,7 @@ class TGPost(Item):
 
         if TG_RSS_HTML_APPEND_PREVIEW:
             if link_preview_attrs.title and link_preview_attrs.desc:
-                html_content += form_preview_html_text(
-                    link_preview_attrs.title, link_preview_attrs.desc
-                )
+                html_content += form_preview_html_text(link_preview_attrs.title, link_preview_attrs.desc)
 
         title = shortened_text(text, 50)
 
@@ -98,9 +106,7 @@ class TGApiChannel(ApiChannel):
         soup = bs4.BeautifulSoup(req.text, "html.parser")
 
         # --- Parse channel title ---
-        channel_metadata_wrapper = soup.find(
-            name="div", attrs={"class": "tgme_channel_info_header"}, recursive=True
-        )
+        channel_metadata_wrapper = soup.find(name="div", attrs={"class": "tgme_channel_info_header"}, recursive=True)
 
         if channel_metadata_wrapper is None:
             raise HTTPException(
@@ -141,16 +147,12 @@ class TGApiChannel(ApiChannel):
         soup = bs4.BeautifulSoup(req.text, "html.parser")
 
         # --- Get list of posts wrappers
-        posts_list = soup.findChildren(
-            name="div", attrs={"class": "tgme_widget_message_wrap"}, recursive=True
-        )
+        posts_list = soup.findChildren(name="div", attrs={"class": "tgme_widget_message_wrap"}, recursive=True)
 
         self.q.extend(reversed(posts_list))  # TODO convert to dataclass on the fly
 
         # --- Next messages page href parsing
-        messages_more_tag = soup.find(
-            name="a", attrs={"class": "tme_messages_more"}, recursive=True
-        )
+        messages_more_tag = soup.find(name="a", attrs={"class": "tme_messages_more"}, recursive=True)
 
         if not messages_more_tag:
             if retry_more:
